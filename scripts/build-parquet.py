@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -32,7 +33,8 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-ANALYSIS = Path("/projects/fernandezguerra/apps/repos/2026-med-sapropel-microbial/analysis")
+# Analysis directory of the code repository; set SAPROPEL_ANALYSIS to its path.
+ANALYSIS = Path(os.environ.get("SAPROPEL_ANALYSIS", "analysis"))
 LCA_DAMAGE = ANALYSIS / "data/taxonomy/damage/lca-damage.tsv.gz"
 LCA_SUMMARY = ANALYSIS / "results/03_taxonomy_clean_noeuk.tsv.gz"
 MAPPING_SUMMARY = ANALYSIS / "data/taxonomy/lca/mapping-summary.tsv.gz"

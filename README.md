@@ -86,7 +86,8 @@ The data are built in two steps, on a machine with access to the analysis
 outputs:
 
 ```sh
-python scripts/build-parquet.py
+SAPROPEL_ANALYSIS=/path/to/2026-mediterranean-sapropels/analysis \
+  python scripts/build-parquet.py
 python scripts/align-to-supp-table.py SUPP_TABLE.xlsx
 ```
 
