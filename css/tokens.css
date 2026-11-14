@@ -1,0 +1,453 @@
+/* Design tokens and base styles shared by every page.
+ *
+ * Palette reference: a split sediment core. Pale grey-green marl for surfaces,
+ * olive-black sapropel for emphasis, deep-water teal for interaction.
+ * Dark mode is set by [data-theme="dark"] on <html> (see js/theme.js).
+ *
+ * Chart colours were checked for colour-vision-deficiency separation
+ * (protan, deutan, tritan) against both surfaces; see README.md.
+ */
+
+:root {
+    color-scheme: light;
+
+    /* Surfaces, lightest to darkest */
+    --bg-deep: #fbfcfa;
+    --bg-base: #f3f5f1;
+    --bg-raised: #e9ece6;
+    --bg-elevated: #dee2db;
+    --bg-hover: #d3d9d1;
+
+    --border-subtle: #dde1da;
+    --border-default: #c4cbc2;
+    --border-strong: #7f8a82;
+
+    --text-primary: #131c1b;
+    --text-secondary: #404b48;
+    --text-tertiary: #59645f;
+    --text-inverse: #ffffff;
+
+    /* Interaction */
+    --accent-primary: #0b6b63;
+    --accent-secondary: #084f49;
+    --accent-muted: #3f736d;
+    --accent-glow: rgba(11, 107, 99, 0.12);
+    --focus-ring: #0b6b63;
+
+    /* Sediment */
+    --sapropel: #343a26;
+    --sapropel-ink: #f1f2e8;
+    --marl: #d9d5bf;
+    --marl-ink: #2c2f22;
+
+    /* Smiley plot series */
+    --damage-5prime: #c4491d;   /* C→T, 5′ end */
+    --damage-3prime: #1f6fb5;   /* G→A, 3′ end */
+    --damage-model: var(--text-primary);
+
+    /* Taxonomic domains (sunburst) */
+    --domain-bacteria: #2470b8;
+    --domain-archaea: #c2498f;
+    --domain-viruses: #b07a10;
+    --domain-other: #6b7570;
+
+    /* Damage status. Status is never shown by colour alone: badges carry
+       text, sunburst leaves use solid (damaged) against hatched fills. */
+    --status-damaged: #0b6b63;
+    --status-non-damaged: #59645f;
+    --status-ancient-glow: rgba(11, 107, 99, 0.12);
+    --warn: #8a5a00;
+    --error: #a3271b;
+
+    --plot-bg: #fbfcfa;
+    --plot-grid: #dde1da;
+    --plot-axis: #59645f;
+
+    --scrim: rgba(12, 20, 21, 0.62);
+
+    /* Spacing */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 12px;
+    --space-lg: 16px;
+    --space-xl: 24px;
+    --space-2xl: 32px;
+    --space-3xl: 56px;
+
+    /* Type: Bricolage Grotesque for headings, IBM Plex Sans for text,
+       IBM Plex Mono for sample identifiers and tabular numbers. */
+    --font-display: 'Bricolage Grotesque', 'IBM Plex Sans', system-ui, sans-serif;
+    --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    /* Type scale (1.2 minor third on a 15px base) */
+    --text-xs: 0.75rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.9375rem;
+    --text-md: 1.0625rem;
+    --text-lg: 1.3rem;
+    --text-xl: 1.6rem;
+    --text-2xl: 2.1rem;
+    --text-3xl: 2.9rem;
+
+    --transition-fast: 0.1s ease;
+    --transition-base: 0.18s ease;
+    --transition-slow: 0.28s ease;
+
+    --shadow-sm: 0 1px 2px rgba(19, 28, 27, 0.08);
+    --shadow-md: 0 4px 14px rgba(19, 28, 27, 0.12);
+    --shadow-lg: 0 12px 32px rgba(19, 28, 27, 0.18);
+    --shadow-glow: 0 4px 16px rgba(11, 107, 99, 0.12);
+
+    --radius-sm: 3px;
+    --radius-md: 5px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+
+    /* Kept for inherited component rules */
+    --parchment-gradient: none;
+    --patina-green: var(--accent-muted);
+    --patina-light: var(--accent-muted);
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --bg-deep: #0c1415;
+    --bg-base: #111b1d;
+    --bg-raised: #18262a;
+    --bg-elevated: #203236;
+    --bg-hover: #2a4045;
+
+    --border-subtle: #1f2e31;
+    --border-default: #2f4448;
+    --border-strong: #6c8387;
+
+    --text-primary: #e4ece8;
+    --text-secondary: #b3c1bd;
+    --text-tertiary: #93a4a0;
+    --text-inverse: #0c1415;
+
+    --accent-primary: #58c2b4;
+    --accent-secondary: #7dd3c7;
+    --accent-muted: #3c8f85;
+    --accent-glow: rgba(88, 194, 180, 0.14);
+    --focus-ring: #7dd3c7;
+
+    --sapropel: #5b6340;
+    --sapropel-ink: #f4f5ea;
+    --marl: #cfcab0;
+    --marl-ink: #1f2217;
+
+    --damage-5prime: #db6a3a;
+    --damage-3prime: #4f93db;
+
+    --domain-bacteria: #4a8fd4;
+    --domain-archaea: #cf5fa3;
+    --domain-viruses: #b88a2a;
+    --domain-other: #8a9792;
+
+    --status-damaged: #58c2b4;
+    --status-non-damaged: #93a4a0;
+    --status-ancient-glow: rgba(88, 194, 180, 0.14);
+    --warn: #e0b04a;
+    --error: #f08a7c;
+
+    --plot-bg: #0c1415;
+    --plot-grid: #1f2e31;
+    --plot-axis: #93a4a0;
+
+    --scrim: rgba(3, 8, 9, 0.72);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+    --shadow-glow: 0 4px 16px rgba(88, 194, 180, 0.12);
+}
+
+/* ---------- Base ---------- */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+html {
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: var(--text-primary);
+    background: var(--bg-deep);
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+}
+
+a {
+    color: var(--accent-primary);
+    text-underline-offset: 0.15em;
+}
+
+a:hover {
+    color: var(--accent-secondary);
+}
+
+button,
+input,
+select {
+    font: inherit;
+    color: inherit;
+}
+
+code,
+kbd,
+.mono {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+}
+
+/* One focus style everywhere; :focus-visible keeps it off mouse clicks. */
+:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.skip-link {
+    position: absolute;
+    left: var(--space-md);
+    top: -48px;
+    z-index: 10000;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--text-primary);
+    color: var(--bg-deep);
+    border-radius: var(--radius-md);
+}
+
+.skip-link:focus {
+    top: var(--space-md);
+    color: var(--bg-deep);
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-default);
+    border-radius: 5px;
+    border: 2px solid var(--bg-deep);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-strong);
+}
+
+/* ---------- Shared pieces ---------- */
+
+.wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-md);
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.wordmark:hover {
+    color: var(--text-primary);
+}
+
+/* Core-section mark: marl with two sapropel bands. */
+.wordmark-mark {
+    width: 14px;
+    height: 26px;
+    border-radius: 2px;
+    border: 1px solid var(--border-strong);
+    background: linear-gradient(
+        to bottom,
+        var(--marl) 0 22%,
+        var(--sapropel) 22% 40%,
+        var(--marl) 40% 62%,
+        var(--sapropel) 62% 74%,
+        var(--marl) 74% 100%
+    );
+    flex: none;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 12px;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--text-primary);
+    background: var(--bg-deep);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btn:hover {
+    background: var(--bg-raised);
+    border-color: var(--border-strong);
+    color: var(--text-primary);
+}
+
+.btn svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+}
+
+.btn-primary {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: var(--text-inverse);
+}
+
+.btn-primary:hover {
+    background: var(--accent-secondary);
+    border-color: var(--accent-secondary);
+    color: var(--text-inverse);
+}
+
+.btn-ghost {
+    background: transparent;
+    border-color: transparent;
+}
+
+.btn-sm {
+    min-height: 28px;
+    padding: 0 8px;
+}
+
+.btn-icon {
+    width: 34px;
+    padding: 0;
+    justify-content: center;
+}
+
+.count-badge {
+    min-width: 18px;
+    padding: 2px 5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: center;
+    color: var(--text-inverse);
+    background: var(--accent-primary);
+    border-radius: 9px;
+}
+
+/* Damage status: filled for damaged, outlined for non-damaged, always with text. */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    border-radius: 10px;
+    border: 1px solid var(--status-non-damaged);
+    color: var(--text-secondary);
+    background: transparent;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.status-badge::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+}
+
+.status-badge.damaged {
+    border-color: var(--status-damaged);
+    background: var(--status-damaged);
+    color: var(--text-inverse);
+}
+
+.status-badge.damaged::before {
+    background: currentColor;
+}
+
+/* Theme icons: show the one for the mode a click switches to. */
+.theme-toggle .icon-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-default);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+@media (forced-colors: active) {
+    .status-badge,
+    .btn {
+        border: 1px solid ButtonText;
+    }
+}
