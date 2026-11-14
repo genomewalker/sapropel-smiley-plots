@@ -41,7 +41,7 @@ For each position i = 1…25 from the read end:
 
 - `fp{i}`: observed C→T frequency, i from the 5′ end. `dp{i}`: metaDMG fit.
 - `fm{i}`: observed G→A frequency, i from the 3′ end. `dm{i}`: metaDMG fit.
-- `fwK{i}`, `fwN{i}`: C→T count and number of reference C at that position (5′). `bwK{i}`, `bwN{i}`: G→A count and number of reference G (3′).
+- `fwK{i}`, `fwN{i}`: C→T count and number of reference C at that position (5′). `bwK{i}`, `bwN{i}`: G→A count and number of reference G (3′). `fp` and `fm` are as reported by metaDMG and are close to, but not always exactly, K/N.
 
 ## Damage status
 

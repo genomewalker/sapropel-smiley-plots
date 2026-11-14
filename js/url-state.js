@@ -3,7 +3,7 @@
 //   sample            sample name, e.g. GeoB15103-1_19-34cm
 //   taxon             reference accession of the open taxon, e.g. GCF_000759875.1
 //   path              taxonomy drill-down, "/"-separated with rank prefixes,
-//                     e.g. d__Bacteria/p__Cyanobacteriota
+//                     e.g. d__Bacteria/p__Cyanobacteria
 //   status            damaged | non-damaged
 //   q                 text filter over taxonomy columns
 //   min_damage        minimum damage estimate (0–1)

@@ -61,6 +61,10 @@ For each position i from 1 to 25, counted from the read end:
 | `fwK{i}`, `fwN{i}` | C→T count and number of reference C at position i (5′) |
 | `bwK{i}`, `bwN{i}` | G→A count and number of reference G at position i (3′) |
 
+`fp{i}` and `fm{i}` are the frequencies as reported by metaDMG. In most rows
+they equal `fwK{i} / fwN{i}` and `bwK{i} / bwN{i}`; in the rest they differ
+from that ratio by a small amount.
+
 ## Damage status
 
 ```sql
