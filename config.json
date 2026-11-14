@@ -1,0 +1,20 @@
+{
+  "damage_threshold": 0.141606,
+  "threshold_ref_sample": "MED-2021-1",
+  "build_id": "1777437820",
+  "qc": {
+    "norm_entropy_gt": 0.6,
+    "breadth_gt": 0.01,
+    "breadth_exp_ratio_ge": 0.75
+  },
+  "min_reads": 50,
+  "ranks": [
+    "phylum",
+    "class",
+    "order",
+    "family",
+    "genus",
+    "species",
+    "subspecies"
+  ]
+}

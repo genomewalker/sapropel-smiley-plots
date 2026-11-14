@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mediterranean Sapropel — Microbial Communities</title>
+    <meta name="description" content="Microbial communities from Mediterranean sapropel sedaDNA">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=91">
+    <style>
+        html, body {
+            height: auto;
+            overflow: auto;
+        }
+
+        .landing {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .landing-header {
+            padding: var(--space-lg) var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .landing-main {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--space-2xl) var(--space-xl);
+        }
+
+        .paper-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: var(--space-lg);
+            color: var(--text-primary);
+        }
+
+        .paper-authors {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: var(--space-lg);
+        }
+
+        .paper-meta {
+            display: flex;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+            margin-bottom: var(--space-2xl);
+            padding-bottom: var(--space-xl);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .paper-meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.9rem;
+            color: var(--text-tertiary);
+        }
+
+        .paper-meta-item svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .paper-meta-item a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .paper-meta-item a:hover {
+            text-decoration: underline;
+        }
+
+        .landing-section {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .landing-section h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-md);
+        }
+
+        .abstract {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .link-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .link-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md) var(--space-lg);
+            background: var(--bg-base);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all var(--transition-fast);
+        }
+
+        .link-item:hover {
+            background: var(--bg-raised);
+            border-color: var(--border-default);
+        }
+
+        .link-item svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+        }
+
+        .link-item-content {
+            flex: 1;
+        }
+
+        .link-item-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .link-item-desc {
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+        }
+
+        .link-item-arrow {
+            color: var(--text-tertiary);
+        }
+
+        .landing-footer {
+            padding: var(--space-lg) var(--space-xl);
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+        }
+
+        .landing-footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        .landing-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile responsiveness for landing page */
+        @media (max-width: 768px) {
+            .landing-header {
+                padding: var(--space-md) var(--space-lg);
+            }
+
+            .landing-main {
+                padding: var(--space-lg) var(--space-lg);
+            }
+
+            .paper-title {
+                font-size: 1.35rem;
+            }
+
+            .paper-authors {
+                font-size: 0.9rem;
+            }
+
+            .paper-meta {
+                gap: var(--space-md);
+            }
+
+            .paper-meta-item {
+                font-size: 0.85rem;
+            }
+
+            .link-item {
+                padding: var(--space-md);
+            }
+
+            .link-item-title {
+                font-size: 0.9rem;
+            }
+
+            .link-item-desc {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .landing-header {
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .landing-main {
+                padding: var(--space-md);
+            }
+
+            .paper-title {
+                font-size: 1.15rem;
+            }
+
+            .paper-meta {
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            .logo-text {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="landing">
+        <header class="landing-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <div class="logo-text">Mediterranean Sapropel</div>
+            </div>
+        </header>
+
+        <main class="landing-main">
+            <h1 class="paper-title">Microbial communities preserved in Mediterranean sapropels</h1>
+
+            <p class="paper-authors">
+                Mediterranean sapropel sedaDNA team — manuscript in preparation (2026).
+            </p>
+
+            <div class="landing-section">
+                <h2>Abstract</h2>
+            <p class="abstract">
+                    Sapropels — organic-rich layers deposited during eastern Mediterranean
+                    anoxic episodes — preserve sedaDNA from the microbial communities that
+                    inhabited the sediment at the time of deposition. We reconstruct
+                    bacterial, archaeal and viral communities from cores GeoB15103-{1,2,3},
+                    authenticate ancient reads via post-mortem DNA damage, and link
+                    community structure to terminal-electron-acceptor regimes across
+                    sapropel events S1, S3, S5 and S6.
+                </p>
+            </div>
+
+            <div class="landing-section">
+                <h2>Tools</h2>
+                <div class="link-list">
+                    <a href="explorer/" class="link-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                            <line x1="9" y1="9" x2="9.01" y2="9"/>
+                            <line x1="15" y1="9" x2="15.01" y2="9"/>
+                        </svg>
+                        <div class="link-item-content">
+                            <div class="link-item-title">Microbial Explorer</div>
+                            <div class="link-item-desc">Interactive visualization of taxonomy and DNA damage</div>
+                        </div>
+                        <svg class="link-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                    <a href="help.html" class="link-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <div class="link-item-content">
+                            <div class="link-item-title">Help & Documentation</div>
+                            <div class="link-item-desc">Understanding DNA damage metrics and analysis</div>
+                        </div>
+                        <svg class="link-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="landing-section">
+                <h2>Code</h2>
+                <div class="link-list">
+                    <a href="https://github.com/genomewalker/2026-med-sapropel-microbial" target="_blank" class="link-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                        </svg>
+                        <div class="link-item-content">
+                            <div class="link-item-title">Analysis Code</div>
+                            <div class="link-item-desc">2026-med-sapropel-microbial — workflows and R pipeline</div>
+                        </div>
+                        <svg class="link-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="landing-section">
+                <h2>Data</h2>
+                <div class="link-list">
+                    <a href="https://www.ebi.ac.uk/ena/browser/view/PRJEB55522" target="_blank" class="link-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                        <div class="link-item-content">
+                            <div class="link-item-title">Sequencing Data</div>
+                            <div class="link-item-desc">PRJEB55522 — European Nucleotide Archive</div>
+                        </div>
+                        <svg class="link-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </a>
+                    <a href="https://doi.org/n59w" target="_blank" class="link-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        <div class="link-item-content">
+                            <div class="link-item-title">Re-extracted Sequences</div>
+                            <div class="link-item-desc">DOI: 10.17894/ucph.n59w — ERDA</div>
+                        </div>
+                        <svg class="link-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </a>
+                    <a href="https://doi.org/n6ks" target="_blank" class="link-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        <div class="link-item-content">
+                            <div class="link-item-title">Taxonomic Database</div>
+                            <div class="link-item-desc">DOI: 10.17894/ucph.n6ks — ERDA</div>
+                        </div>
+                        <svg class="link-item-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <footer class="landing-footer">
+        </footer>
+    </div>
+</body>
+</html>

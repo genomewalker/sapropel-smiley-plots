@@ -1,0 +1,79 @@
+[
+  {
+    "sample": "GeoB15103-1_19-34cm",
+    "specific_feature": "Sapropel1",
+    "age_ka": 9.3,
+    "core": "GeoB15103-1",
+    "sort_order": 0
+  },
+  {
+    "sample": "GeoB15103-2_21-34cm",
+    "specific_feature": "Sapropel1",
+    "age_ka": 9.3,
+    "core": "GeoB15103-2",
+    "sort_order": 1
+  },
+  {
+    "sample": "GeoB15103-1_308-320cm",
+    "specific_feature": "Sapropel3",
+    "age_ka": 77.21,
+    "core": "GeoB15103-1",
+    "sort_order": 2
+  },
+  {
+    "sample": "GeoB15103-2_287-298cm",
+    "specific_feature": "Sapropel3",
+    "age_ka": 77.21,
+    "core": "GeoB15103-2",
+    "sort_order": 3
+  },
+  {
+    "sample": "GeoB15103-1_453-466cm",
+    "specific_feature": "Sapropel5",
+    "age_ka": 121.045,
+    "core": "GeoB15103-1",
+    "sort_order": 4
+  },
+  {
+    "sample": "GeoB15103-2_435-455cm",
+    "specific_feature": "Sapropel5",
+    "age_ka": 121.045,
+    "core": "GeoB15103-2",
+    "sort_order": 5
+  },
+  {
+    "sample": "GeoB15103-2_550-567cm",
+    "specific_feature": "Sapropel6",
+    "age_ka": 173.3,
+    "core": "GeoB15103-2",
+    "sort_order": 6
+  },
+  {
+    "sample": "GeoB15103-3_2-4cm",
+    "specific_feature": "Non-sapropel",
+    "age_ka": 0.675,
+    "core": "GeoB15103-3",
+    "sort_order": 7
+  },
+  {
+    "sample": "GeoB15103-2_220-240cm",
+    "specific_feature": "Non-sapropel",
+    "age_ka": 60.235,
+    "core": "GeoB15103-2",
+    "sort_order": 8
+  },
+  {
+    "sample": "GeoB15103-1_291-303cm",
+    "specific_feature": "Non-sapropel",
+    "age_ka": 73.15,
+    "core": "GeoB15103-1",
+    "sort_order": 9
+  },
+  {
+    "sample": "GeoB15103-2_465-480cm",
+    "specific_feature": "Non-sapropel",
+    "age_ka": 131.9,
+    "core": "GeoB15103-2",
+    "sort_order": 10
+  }
+]

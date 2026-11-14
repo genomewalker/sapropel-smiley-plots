@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sapropel Microbial Explorer - aDNA Damage Analysis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css?v=91">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <line x1="3" y1="12" x2="21" y2="12"/>
+                    <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+            </button>
+            <a href="../" class="logo" style="text-decoration: none;">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <div class="logo-text">Sapropel <span>Microbial Explorer</span></div>
+            </a>
+
+            <div class="search-trigger" id="search-trigger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <span class="placeholder">Search taxa across samples...</span>
+                <kbd>⌘K</kbd>
+            </div>
+
+            <div class="header-actions">
+                <button class="btn btn-compare" id="compare-samples-btn" title="Compare selected samples (select samples in sidebar)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="6" cy="12" r="4"/>
+                        <circle cx="18" cy="12" r="4"/>
+                        <path d="M10 12h4" stroke-dasharray="2 2"/>
+                    </svg>
+                    <span>Compare Samples</span>
+                </button>
+                <button class="btn btn-taxa" id="compare-taxa-btn" title="Compare taxa across samples">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>Compare Taxa</span>
+                </button>
+                <button class="btn btn-secondary" id="export-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Export</span>
+                </button>
+                <a href="../help.html" class="btn btn-ghost" title="Help & Documentation">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span>Help</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Main workspace -->
+        <div class="workspace" id="workspace">
+            <!-- Sidebar overlay (mobile) -->
+            <div class="sidebar-overlay" id="sidebar-overlay"></div>
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-header">
+                        Samples
+                        <span class="count" id="sample-count">0</span>
+                    </div>
+                </div>
+                <div class="sample-list" id="sample-list">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <span>Loading samples...</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main panel -->
+            <main class="main-panel">
+                <!-- Toolbar -->
+                <div class="toolbar">
+                    <div class="toolbar-group">
+                        <div class="status-filter" id="status-filter">
+                            <button class="active" data-status="all">All</button>
+                            <button data-status="damaged">Damaged</button>
+                            <button data-status="non-damaged">Non-damaged</button>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-divider"></div>
+
+                    <div class="toolbar-group">
+                        <div class="filter-chip">
+                            <label>Damage ≥</label>
+                            <input type="number" id="filter-damage" value="0" min="0" max="1" step="0.01">
+                        </div>
+                        <div class="filter-chip">
+                            <label>Significance ≥</label>
+                            <input type="number" id="filter-significance" value="0" min="0" step="0.5">
+                        </div>
+                        <div class="filter-chip">
+                            <label>Reads ≥</label>
+                            <input type="number" id="filter-reads" value="0" min="0" step="100">
+                        </div>
+                    </div>
+
+                    <div style="flex:1"></div>
+
+                    <div class="toolbar-group">
+                        <div class="filter-indicator" id="filter-indicator">
+                            <span class="filter-label">Filter:</span>
+                            <div class="filter-path-chips" id="filter-path-chips"></div>
+                            <button class="filter-clear-btn" id="filter-clear-btn" onclick="clearAllFilters()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content area - resizable split -->
+                <div class="content-area">
+                    <!-- Sunburst panel -->
+                    <div class="sunburst-panel" id="sunburst-panel">
+                        <div class="panel-header">
+                            <h3>Taxonomy</h3>
+                        </div>
+                        <div class="sunburst-container" id="sunburst-container">
+                            <svg id="sunburst"></svg>
+                            <div class="sunburst-center" id="sunburst-center">
+                                <button class="center-back-btn" id="center-back-btn" title="Go back" onclick="goBackOneLevel()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                                </button>
+                                <h4>All Taxa</h4>
+                                <p>Click to filter</p>
+                            </div>
+                        </div>
+                        <div class="sunburst-legend-card">
+                            <div class="legend-section">
+                                <span class="legend-section-title">Domain</span>
+                                <div class="sunburst-legend" id="sunburst-legend-domain"></div>
+                            </div>
+                            <div class="legend-divider"></div>
+                            <div class="legend-section">
+                                <span class="legend-section-title">Status</span>
+                                <div class="sunburst-legend" id="sunburst-legend-status"></div>
+                            </div>
+                        </div>
+                        <div class="sunburst-hidden-count" id="sunburst-hidden-count" style="display:none"></div>
+                        <div class="sunburst-breadcrumb" id="sunburst-breadcrumb">
+                            <span>Hover to explore</span>
+                        </div>
+                    </div>
+
+                    <!-- Resizable divider -->
+                    <div class="resize-handle" id="resize-handle">
+                        <div class="resize-line"></div>
+                    </div>
+
+                    <!-- Table panel -->
+                    <div class="table-panel" id="table-panel">
+                        <div class="table-container" id="table-container">
+                            <table class="data-table" id="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px"></th>
+                                        <th data-sort="species">Species <span class="sort-icon">↕</span></th>
+                                        <th data-sort="genus">Genus <span class="sort-icon">↕</span></th>
+                                        <th data-sort="family">Family <span class="sort-icon">↕</span></th>
+                                        <th data-sort="damage" class="sorted">Damage <span class="sort-icon">↓</span></th>
+                                        <th data-sort="significance">Signif. <span class="sort-icon">↕</span></th>
+                                        <th data-sort="n_reads">Reads <span class="sort-icon">↕</span></th>
+                                        <th data-sort="n_alns">Alns <span class="sort-icon">↕</span></th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Detail panel (slides in from right) -->
+                    <aside class="detail-panel" id="detail-panel">
+                        <div class="detail-header">
+                            <h3 id="detail-species">Select a taxon</h3>
+                            <button class="detail-close-btn" id="detail-close-btn" title="Close">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                        <div class="detail-content" id="detail-content">
+                            <div class="empty-state small">
+                                <p>Click a row to view damage profile</p>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </main>
+        </div>
+
+        <!-- Status bar -->
+        <footer class="status-bar">
+            <div class="status-left">
+                <div class="status-item">
+                    <span>Sample:</span>
+                    <span class="value" id="status-sample">-</span>
+                </div>
+                <div class="status-item">
+                    <span>Showing:</span>
+                    <span class="value" id="status-showing">0</span>
+                    <span>of</span>
+                    <span class="value" id="status-total">0</span>
+                </div>
+                <div class="status-item">
+                    <span>Selected:</span>
+                    <span class="value" id="status-selected">0</span>
+                </div>
+            </div>
+            <div class="status-right">
+                <span>DuckDB-WASM</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Compare samples overlay -->
+    <div class="compare-overlay" id="compare-overlay">
+        <div class="compare-modal">
+            <div class="compare-header">
+                <div>
+                    <h2>Compare Samples</h2>
+                    <p class="compare-subtitle" id="compare-subtitle">Comparing taxonomy distributions</p>
+                </div>
+                <button class="compare-close" id="compare-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="compare-body">
+                <div class="compare-sunburst-grid" id="compare-sunburst-grid">
+                    <!-- Sunbursts will be rendered here -->
+                </div>
+                <div class="compare-filter-info" id="compare-filter-info">
+                    <span>Click on any segment to filter all views</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Command palette -->
+    <div class="command-overlay" id="command-overlay">
+        <div class="command-palette">
+            <div class="command-input-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                <input type="text" class="command-input" id="command-input" placeholder="Search taxa across all samples...">
+            </div>
+            <div class="command-results" id="command-results">
+                <div class="command-hint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <p>Search for taxa across all samples</p>
+                    <span class="hint-example">e.g. "Streptococcus", "Lactobacillus"</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="../js/app.js?v=91"></script>
+</body>
+</html>

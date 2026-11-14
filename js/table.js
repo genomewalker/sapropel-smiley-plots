@@ -1,0 +1,308 @@
+// ========== TABLE RENDERING ==========
+import { state, domainColors } from './state.js?v=91';
+import { n, fmt, pct, cleanName, getStatus } from './utils.js?v=91';
+import { renderSunburst, updateLegend } from './sunburst.js?v=91';
+
+export function renderSampleList(samples) {
+    const container = document.getElementById('sample-list');
+    // Group by specific_feature, preserving the input order (already sorted
+    // by sapropel layer → age → core in samples.json).
+    const groups = [];
+    let last = null;
+    for (const s of samples) {
+        const feat = s.specific_feature || 'Unknown';
+        if (last && last.feat === feat) {
+            last.items.push(s);
+        } else {
+            last = { feat, items: [s] };
+            groups.push(last);
+        }
+    }
+    container.innerHTML = groups.map(g => `
+        <div class="sample-group-header">${g.feat}</div>
+        ${g.items.map(s => {
+            const filteredCount = n(s.filtered_taxa_count) || n(s.taxa_count);
+            const damagedPct = filteredCount > 0 ? (n(s.damaged_count) / filteredCount * 100).toFixed(0) : 0;
+            const isSelected = state.selectedSamples.includes(s.sample);
+            const age = s.age_ka != null ? `${Number(s.age_ka).toLocaleString(undefined, {maximumFractionDigits: 2})} ka` : '';
+            const core = s.core || '';
+            return `
+            <div class="sample-item ${isSelected ? 'compare-selected' : ''}" data-sample="${s.sample}">
+                <div class="sample-select-checkbox ${isSelected ? 'checked' : ''}" data-sample="${s.sample}" title="Select for comparison">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                <div class="sample-item-content">
+                    <div class="sample-item-header">
+                        <span class="sample-name">${s.sample}</span>
+                        <div class="sample-damage-indicator" style="background: ${damagedPct > 0 ? 'var(--status-damaged)' : 'var(--status-non-damaged)'}"></div>
+                    </div>
+                    <div class="sample-meta">${[core, age].filter(Boolean).join(' · ')}</div>
+                    <div class="sample-stats">
+                        <span>Taxa: <span class="value">${fmt(filteredCount)}</span></span>
+                        <span>Damaged: <span class="value">${damagedPct}%</span></span>
+                    </div>
+                </div>
+            </div>
+        `;
+        }).join('')}
+    `).join('');
+
+    // Checkbox click handler
+    container.querySelectorAll('.sample-select-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const sampleName = checkbox.dataset.sample;
+            const idx = state.selectedSamples.indexOf(sampleName);
+            if (idx === -1) {
+                state.selectedSamples.push(sampleName);
+            } else {
+                state.selectedSamples.splice(idx, 1);
+            }
+            renderSampleList(state.samples);
+            updateCompareSamplesButton();
+        });
+    });
+
+    // Sample item click handler (select as current sample)
+    container.querySelectorAll('.sample-item-content').forEach(content => {
+        content.addEventListener('click', async () => {
+            const { selectSample } = await import('./actions.js?v=91');
+            const sample = content.closest('.sample-item').dataset.sample;
+            selectSample(sample);
+        });
+    });
+}
+
+// Update compare samples button badge
+function updateCompareSamplesButton() {
+    const btn = document.getElementById('compare-samples-btn');
+    if (!btn) return;
+
+    let badge = btn.querySelector('.compare-badge');
+    if (state.selectedSamples.length > 0) {
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'compare-badge';
+            btn.appendChild(badge);
+        }
+        badge.textContent = state.selectedSamples.length;
+        btn.classList.add('has-selection');
+    } else {
+        if (badge) badge.remove();
+        btn.classList.remove('has-selection');
+    }
+}
+
+export function renderTable() {
+    const tbody = document.getElementById('table-body');
+
+    if (state.filteredData.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" style="text-align:center;padding:40px;color:var(--text-tertiary);">
+                    No references match the current filters
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = state.filteredData.map(d => {
+        const status = getStatus(d);
+        const isSelected = state.selectedRef === d.id;
+        const isComparing = state.compareList.includes(d.id);
+
+        return `
+            <tr data-id="${d.id}" class="${isSelected ? 'selected' : ''}">
+                <td>
+                    <div class="compare-checkbox ${isComparing ? 'checked' : ''}" data-id="${d.id}"></div>
+                </td>
+                <td class="cell-taxonomy" title="${cleanName(d.species)}">${cleanName(d.species)}</td>
+                <td class="cell-taxonomy" title="${cleanName(d.genus)}">${cleanName(d.genus)}</td>
+                <td class="cell-taxonomy" title="${cleanName(d.family)}">${cleanName(d.family)}</td>
+                <td>
+                    <div class="cell-damage">
+                        <span class="cell-mono">${pct(d.damage)}%</span>
+                    </div>
+                </td>
+                <td class="cell-number">${n(d.significance).toFixed(1)}</td>
+                <td class="cell-number">${fmt(d.n_reads)}</td>
+                <td class="cell-number">${fmt(d.n_alns)}</td>
+                <td><span class="status-badge ${status}">${status}</span></td>
+            </tr>
+        `;
+    }).join('');
+
+    // Row click handlers
+    tbody.querySelectorAll('tr').forEach(row => {
+        row.addEventListener('click', async (e) => {
+            const { selectReference, toggleCompare } = await import('./actions.js?v=91');
+            if (e.target.closest('.compare-checkbox')) {
+                toggleCompare(Number(row.dataset.id));
+            } else {
+                selectReference(Number(row.dataset.id));
+            }
+        });
+
+        // Right-click context menu
+        row.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const rowId = Number(row.dataset.id);
+            const data = state.filteredData.find(d => d.id === rowId);
+            if (data) {
+                showContextMenu(e.clientX, e.clientY, data);
+            }
+        });
+    });
+}
+
+// Context menu for taxa actions
+function showContextMenu(x, y, data) {
+    // Remove any existing context menu
+    const existing = document.getElementById('table-context-menu');
+    if (existing) existing.remove();
+
+    const speciesName = cleanName(data.species);
+    const genusName = cleanName(data.genus);
+    const familyName = cleanName(data.family);
+
+    const menu = document.createElement('div');
+    menu.id = 'table-context-menu';
+    menu.className = 'context-menu';
+    menu.innerHTML = `
+        <div class="context-menu-header">Track Across Samples</div>
+        ${speciesName ? `
+            <div class="context-menu-item primary" data-action="track-species" data-taxon="${speciesName}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                Species: ${speciesName}
+            </div>
+        ` : ''}
+        ${genusName ? `
+            <div class="context-menu-item" data-action="track-genus" data-taxon="${genusName}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                Genus: ${genusName}
+            </div>
+        ` : ''}
+        ${familyName ? `
+            <div class="context-menu-item" data-action="track-family" data-taxon="${familyName}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                Family: ${familyName}
+            </div>
+        ` : ''}
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" data-action="add-compare">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Add to Comparison
+        </div>
+        <div class="context-menu-item" data-action="view-details">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+            </svg>
+            View Details
+        </div>
+    `;
+
+    // Position the menu
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    document.body.appendChild(menu);
+
+    // Adjust position if menu goes off screen
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) {
+        menu.style.left = (x - rect.width) + 'px';
+    }
+    if (rect.bottom > window.innerHeight) {
+        menu.style.top = (y - rect.height) + 'px';
+    }
+
+    // Event handlers
+    menu.querySelectorAll('.context-menu-item').forEach(item => {
+        item.addEventListener('click', async () => {
+            const action = item.dataset.action;
+            const taxon = item.dataset.taxon;
+
+            if (action === 'track-species' || action === 'track-genus' || action === 'track-family') {
+                const { trackTaxonAcrossSamples } = await import('./compare.js?v=91');
+                const level = action.replace('track-', '');
+                trackTaxonAcrossSamples(taxon, level);
+            } else if (action === 'add-compare') {
+                const { addToBasket } = await import('./compare.js?v=91');
+                // Note: addToBasket is on window, but we can also use direct import
+                if (window.addToBasket) {
+                    window.addToBasket(data.id, state.currentSample);
+                }
+            } else if (action === 'view-details') {
+                const { selectReference } = await import('./actions.js?v=91');
+                selectReference(data.id);
+            }
+
+            removeContextMenu();
+        });
+    });
+
+    // Close on click outside
+    setTimeout(() => {
+        document.addEventListener('click', removeContextMenu);
+        document.addEventListener('contextmenu', removeContextMenu);
+        document.addEventListener('scroll', removeContextMenu, true);
+    }, 0);
+}
+
+function removeContextMenu() {
+    const menu = document.getElementById('table-context-menu');
+    if (menu) menu.remove();
+    document.removeEventListener('click', removeContextMenu);
+    document.removeEventListener('contextmenu', removeContextMenu);
+    document.removeEventListener('scroll', removeContextMenu, true);
+}
+
+export function buildSunburst() {
+    const source = state.sunburstData && state.sunburstData.length
+        ? state.sunburstData
+        : state.filteredData;
+    if (!source || source.length === 0) return;
+
+    const hierarchy = { name: 'root', children: [] };
+
+    source.forEach(d => {
+        const path = [d.domain, d.phylum, d.class_, d.order_, d.family, d.genus];
+        let current = hierarchy;
+
+        path.forEach((name, i) => {
+            if (!name) return;
+            let child = current.children.find(c => c.name === name);
+            if (!child) {
+                child = { name, children: [], data: null };
+                current.children.push(child);
+            }
+            current = child;
+        });
+
+        if (!current.children.find(c => c.name === d.species)) {
+            current.children.push({
+                name: d.species || d.reference,
+                children: [],
+                data: d,
+                status: getStatus(d),
+            });
+        }
+    });
+
+    const root = d3.hierarchy(hierarchy)
+        .sum(d => d.data ? Number(d.data.n_reads) || 0 : 0)
+        .sort((a, b) => Number(b.value) - Number(a.value));
+
+    renderSunburst(root);
+    updateLegend();
+}
