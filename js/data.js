@@ -1,190 +1,171 @@
-// ========== DATA LOADING ==========
+// Data access. DuckDB-WASM reads meta.parquet and freq.parquet in the
+// browser; nothing here touches the DOM.
+//
+// Data contract (do not rename without rebuilding the data):
+//   meta.parquet  one row per (sample, reference genome); key `id`
+//   freq.parquet  per-position frequencies for the same `id`:
+//                 fp/fm = observed C→T (5′) / G→A (3′), dp/dm = metaDMG fit
+//   samples.json  sample order, sapropel layer, age (ka) and core
+//   config.json   damage_threshold, build_id, QC thresholds
 import * as duckdb from 'https://cdn.jsdelivr.net/npm/@duckdb/duckdb-wasm@1.28.0/+esm';
-import { state } from './state.js?v=91';
-import { convertResults, getStatus, damageConfig } from './utils.js?v=91';
-import { renderSampleList, renderTable, buildSunburst } from './table.js?v=91';
+import { state, RANK_COLUMNS } from './state.js';
+import { convertResults, getStatus, damagedSql, loadConfig, sqlString, SITE_ROOT, exportHeaders, exportRow, downloadCsv } from './utils.js';
+
+export const N_POSITIONS = 25;
+
+/** "f.fp1, …, f.dm25": the four per-position series of the smiley plot. */
+const FREQ_COLUMNS = ['fp', 'fm', 'dp', 'dm']
+    .flatMap(prefix => Array.from({ length: N_POSITIONS }, (_, i) => `f.${prefix}${i + 1}`))
+    .join(', ');
 
 export async function initDuckDB() {
-    const JSDELIVR_BUNDLES = duckdb.getJsDelivrBundles();
-    const bundle = await duckdb.selectBundle(JSDELIVR_BUNDLES);
-    const worker_url = URL.createObjectURL(
+    const bundle = await duckdb.selectBundle(duckdb.getJsDelivrBundles());
+    const workerUrl = URL.createObjectURL(
         new Blob([`importScripts("${bundle.mainWorker}");`], { type: 'text/javascript' })
     );
-    const worker = new Worker(worker_url);
-    const logger = new duckdb.ConsoleLogger();
-    state.db = new duckdb.AsyncDuckDB(logger, worker);
+    const worker = new Worker(workerUrl);
+    state.db = new duckdb.AsyncDuckDB(new duckdb.VoidLogger(), worker);
     await state.db.instantiate(bundle.mainModule);
-    URL.revokeObjectURL(worker_url);
+    URL.revokeObjectURL(workerUrl);
     state.conn = await state.db.connect();
 
-    const baseUrl = new URL('/', window.location.href).href;
-    // Cache-bust via config.json's build_id so a parquet rebuild invalidates
-    // any cached HTTP range responses in the browser.
-    const cfgResp = await fetch(baseUrl + 'config.json', { cache: 'no-cache' });
-    const cfg = cfgResp.ok ? await cfgResp.json() : {};
+    // build_id changes on every data rebuild, so it busts cached parquet files.
+    const cfg = await loadConfig();
     const v = cfg.build_id || Date.now();
-    await state.db.registerFileURL('meta.parquet', baseUrl + 'meta.parquet?v=' + v,
-        duckdb.DuckDBDataProtocol.HTTP, false);
-    await state.db.registerFileURL('freq.parquet', baseUrl + 'freq.parquet?v=' + v,
-        duckdb.DuckDBDataProtocol.HTTP, false);
-
+    for (const file of ['meta.parquet', 'freq.parquet']) {
+        await state.db.registerFileURL(file, `${SITE_ROOT}${file}?v=${v}`,
+            duckdb.DuckDBDataProtocol.HTTP, false);
+    }
     await state.conn.query(`CREATE VIEW meta AS SELECT * FROM 'meta.parquet'`);
     await state.conn.query(`CREATE VIEW freq AS SELECT * FROM 'freq.parquet'`);
 }
 
-export async function loadSamples() {
-    const thr = Number(damageConfig.threshold) || 0;
-    const result = await state.conn.query(`
-        SELECT sample,
-               COUNT(*) as taxa_count,
-               SUM(n_reads) as total_reads,
-               AVG(damage) as avg_damage,
-               SUM(CASE WHEN damage > ${thr} AND (fit IS NULL OR fit <> 'bad') THEN 1 ELSE 0 END) as damaged_count,
-               COUNT(*) as filtered_taxa_count
-        FROM meta
-        GROUP BY sample
-    `);
+async function query(sql) {
+    return convertResults(await state.conn.query(sql));
+}
 
-    // Order by samples.json (sapropel layers first, then by age, then core).
-    const baseUrl = new URL('/', window.location.href).href;
+/** Samples in samples.json order, each with taxa and damaged counts. */
+export async function fetchSamples() {
+    const stats = await query(`
+        SELECT sample,
+               COUNT(*) AS taxa_count,
+               SUM(n_reads) AS total_reads,
+               SUM(CASE WHEN ${damagedSql()} THEN 1 ELSE 0 END) AS damaged_count
+        FROM meta GROUP BY sample
+    `);
+    const byName = new Map(stats.map(s => [s.sample, s]));
+
     let order = [];
     try {
-        const r = await fetch(baseUrl + 'samples.json', { cache: 'no-cache' });
+        const r = await fetch(SITE_ROOT + 'samples.json', { cache: 'no-cache' });
         if (r.ok) order = await r.json();
-    } catch (e) { console.warn('samples.json load failed:', e); }
-    const meta = new Map(order.map(s => [s.sample, s]));
-    const stats = new Map(convertResults(result).map(s => [s.sample, s]));
-    const samples = order.length
-        ? order.map(o => ({ ...stats.get(o.sample), ...o }))
-              .filter(s => s.taxa_count != null)
-        : [...stats.values()];
-    state.samples = samples;
-    state.sampleMeta = meta;
-    document.getElementById('sample-count').textContent = samples.length;
-    renderSampleList(samples);
-
-    if (samples.length > 0) {
-        const { selectSample } = await import('./actions.js?v=91');
-
-        // Try to restore from localStorage
-        const savedSample = localStorage.getItem('sap-selected-sample');
-        if (savedSample && samples.find(s => s.sample === savedSample)) {
-            selectSample(savedSample);
-        } else {
-            selectSample(samples[0].sample);
-        }
+    } catch (e) {
+        console.warn('samples.json could not be loaded; using parquet order', e);
     }
+    state.samples = order.length
+        ? order.filter(o => byName.has(o.sample)).map(o => ({ ...byName.get(o.sample), ...o }))
+        : stats;
+    return state.samples;
 }
 
-export async function loadSampleData() {
-    if (!state.currentSample) return;
-
-    const result = await state.conn.query(`
-        SELECT m.*,
-            f.fp1, f.fp2, f.fp3, f.fp4, f.fp5, f.fp6, f.fp7, f.fp8, f.fp9, f.fp10,
-            f.fp11, f.fp12, f.fp13, f.fp14, f.fp15, f.fp16, f.fp17, f.fp18, f.fp19, f.fp20,
-            f.fp21, f.fp22, f.fp23, f.fp24, f.fp25,
-            f.fm1, f.fm2, f.fm3, f.fm4, f.fm5, f.fm6, f.fm7, f.fm8, f.fm9, f.fm10,
-            f.fm11, f.fm12, f.fm13, f.fm14, f.fm15, f.fm16, f.fm17, f.fm18, f.fm19, f.fm20,
-            f.fm21, f.fm22, f.fm23, f.fm24, f.fm25,
-            f.dp1, f.dp2, f.dp3, f.dp4, f.dp5, f.dp6, f.dp7, f.dp8, f.dp9, f.dp10,
-            f.dp11, f.dp12, f.dp13, f.dp14, f.dp15, f.dp16, f.dp17, f.dp18, f.dp19, f.dp20,
-            f.dp21, f.dp22, f.dp23, f.dp24, f.dp25,
-            f.dm1, f.dm2, f.dm3, f.dm4, f.dm5, f.dm6, f.dm7, f.dm8, f.dm9, f.dm10,
-            f.dm11, f.dm12, f.dm13, f.dm14, f.dm15, f.dm16, f.dm17, f.dm18, f.dm19, f.dm20,
-            f.dm21, f.dm22, f.dm23, f.dm24, f.dm25
-        FROM meta m
-        JOIN freq f ON m.id = f.id
-        WHERE m.sample = '${state.currentSample}'
+/** All rows for one sample, with the smiley-plot series joined on. */
+export async function fetchSampleRows(sample) {
+    return query(`
+        SELECT m.*, ${FREQ_COLUMNS}
+        FROM meta m JOIN freq f ON m.id = f.id
+        WHERE m.sample = ${sqlString(sample)}
     `);
-
-    state.sampleData = convertResults(result);
-    applyFilters();
 }
 
-export function applyFilters({ rebuildSunburst = true } = {}) {
-    let base = [...state.sampleData];
+/** Rows (meta only) for one sample; used by the sample-comparison view. */
+export async function fetchSampleMeta(sample) {
+    return query(`SELECT * FROM meta WHERE sample = ${sqlString(sample)} ORDER BY damage DESC`);
+}
 
-    // Numeric filters (apply to both sunburst and table)
-    if (state.filters.minDamage > 0) {
-        base = base.filter(d => d.damage >= state.filters.minDamage);
-    }
-    if (state.filters.minSignificance > 0) {
-        base = base.filter(d => d.significance >= state.filters.minSignificance);
-    }
-    if (state.filters.minReads > 0) {
-        base = base.filter(d => d.n_reads >= state.filters.minReads);
-    }
+/** One taxon in every sample (or in `samples`), with smiley series. */
+export async function fetchTaxonAcrossSamples(name, level, samples = null) {
+    const column = ['species', 'genus', 'family'].includes(level) ? level : 'species';
+    const prefix = column[0] + '__';
+    const bare = name.replace(/^[dpcofgs]__/i, '');
+    const sampleClause = samples && samples.length
+        ? `AND m.sample IN (${samples.map(sqlString).join(',')})` : '';
+    return query(`
+        SELECT m.*, ${FREQ_COLUMNS}
+        FROM meta m JOIN freq f ON m.id = f.id
+        WHERE (m.${column} = ${sqlString(name)} OR m.${column} = ${sqlString(prefix + bare)})
+        ${sampleClause}
+        ORDER BY m.damage DESC
+    `);
+}
 
-    // Search filter (also applies to both)
-    if (state.filters.search) {
-        const search = state.filters.search.toLowerCase();
-        base = base.filter(d =>
-            (d.domain && d.domain.toLowerCase().includes(search)) ||
-            (d.phylum && d.phylum.toLowerCase().includes(search)) ||
-            (d.class_ && d.class_.toLowerCase().includes(search)) ||
-            (d.order_ && d.order_.toLowerCase().includes(search)) ||
-            (d.family && d.family.toLowerCase().includes(search)) ||
-            (d.genus && d.genus.toLowerCase().includes(search)) ||
-            (d.species && d.species.toLowerCase().includes(search)) ||
-            (d.reference && d.reference.toLowerCase().includes(search))
-        );
+/** Search taxon names in every sample. Returns up to `limit` grouped hits. */
+export async function searchTaxa(text, limit = 20) {
+    const like = sqlString('%' + text.toLowerCase().replace(/[%_]/g, '') + '%');
+    return query(`
+        WITH hits AS (
+            SELECT species AS name, 'species' AS level, sample, damage, n_reads, fit FROM meta
+            WHERE lower(species) LIKE ${like} OR lower(reference) LIKE ${like}
+            UNION ALL
+            SELECT genus, 'genus', sample, damage, n_reads, fit FROM meta WHERE lower(genus) LIKE ${like}
+            UNION ALL
+            SELECT family, 'family', sample, damage, n_reads, fit FROM meta WHERE lower(family) LIKE ${like}
+        )
+        SELECT name, level,
+               COUNT(DISTINCT sample) AS sample_count,
+               COUNT(*) AS row_count,
+               SUM(n_reads) AS total_reads,
+               SUM(CASE WHEN ${damagedSql()} THEN 1 ELSE 0 END) AS damaged_count
+        FROM hits
+        GROUP BY name, level
+        ORDER BY CASE level WHEN 'family' THEN 0 WHEN 'genus' THEN 1 ELSE 2 END,
+                 sample_count DESC, total_reads DESC
+        LIMIT ${Number(limit) || 20}
+    `);
+}
+
+/** True when a row lies under the taxonomy path (exact match per rank). */
+function matchesPath(d, path) {
+    // Paths from the sunburst start at the domain; anything else is a
+    // single taxon name of unknown rank, matched against every rank.
+    if (path.length && /^d__/.test(path[0])) {
+        return path.every((name, i) => d[RANK_COLUMNS[i]] === name);
     }
+    return path.every(name => RANK_COLUMNS.some(col => d[col] === name) || d.species === name);
+}
 
-    // Sunburst sees every taxon; status is rendered as a visual overlay.
-    state.sunburstData = base;
+/**
+ * Apply filters and sorting to state.sampleData.
+ * sunburstData ignores the status filter (the sunburst dims instead of
+ * dropping arcs); filteredData is what the table shows.
+ */
+export function computeFiltered() {
+    const f = state.filters;
+    const text = f.search.trim().toLowerCase();
+    let rows = state.sampleData.filter(d =>
+        (f.minDamage <= 0 || d.damage >= f.minDamage) &&
+        (f.minSignificance <= 0 || d.significance >= f.minSignificance) &&
+        (f.minReads <= 0 || d.n_reads >= f.minReads) &&
+        (state.filterPath.length === 0 || matchesPath(d, state.filterPath)) &&
+        (!text || [d.species, d.genus, d.family, d.order_, d.class_, d.phylum, d.domain, d.reference]
+            .some(v => v && v.toLowerCase().includes(text)))
+    );
+    state.sunburstData = rows;
 
-    // Status filter affects only the table
-    let data = base;
-    if (state.filters.status !== 'all') {
-        data = data.filter(d => getStatus(d) === state.filters.status);
-    }
+    if (f.status !== 'all') rows = rows.filter(d => getStatus(d) === f.status);
 
-    // Sort
-    data.sort((a, b) => {
-        let aVal = a[state.sortColumn];
-        let bVal = b[state.sortColumn];
-        if (typeof aVal === 'string' || typeof bVal === 'string') {
-            aVal = String(aVal || '');
-            bVal = String(bVal || '');
-            return state.sortDirection === 'asc'
-                ? aVal.localeCompare(bVal)
-                : bVal.localeCompare(aVal);
+    const col = state.sortColumn;
+    const dir = state.sortDirection === 'asc' ? 1 : -1;
+    state.filteredData = [...rows].sort((a, b) => {
+        const av = a[col], bv = b[col];
+        if (typeof av === 'string' || typeof bv === 'string') {
+            return dir * String(av || '').localeCompare(String(bv || ''));
         }
-        return state.sortDirection === 'asc' ? Number(aVal) - Number(bVal) : Number(bVal) - Number(aVal);
+        return dir * (Number(av) - Number(bv));
     });
-
-    state.filteredData = data;
-
-    // Update UI
-    document.getElementById('status-total').textContent = state.sampleData.length.toLocaleString();
-    document.getElementById('status-showing').textContent = data.length.toLocaleString();
-
-    renderTable();
-    if (state.showSunburst) {
-        if (rebuildSunburst) {
-            buildSunburst();
-        } else {
-            import('./sunburst.js?v=91').then(({ applyStatusOverlay }) => {
-                applyStatusOverlay(state.filters.status);
-            });
-        }
-    }
 }
 
-export function exportData() {
-    const headers = ['sample', 'reference', 'domain', 'phylum', 'class', 'order', 'family', 'genus', 'species', 'damage', 'significance', 'n_reads', 'status'];
-    const rows = state.filteredData.map(d => [
-        d.sample, d.reference, d.domain, d.phylum, d.class_, d.order_, d.family, d.genus, d.species,
-        d.damage, d.significance, d.n_reads, getStatus(d)
-    ]);
-
-    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v || ''}"`).join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `adna_damage_${state.currentSample || 'export'}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+export function exportCurrentTable() {
+    downloadCsv(`sapropel_damage_${state.currentSample || 'export'}.csv`,
+        exportHeaders(), state.filteredData.map(exportRow));
+    return state.filteredData.length;
 }

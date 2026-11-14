@@ -1,274 +1,189 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sapropel Microbial Explorer - aDNA Damage Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Explorer | Sapropel smiley plots</title>
+    <meta name="description" content="Browse ancient-DNA damage estimates (metaDMG) for bacterial, archaeal and viral reference genomes in sediment samples from eastern Mediterranean cores GeoB15103-1, -2 and -3.">
+    <link rel="canonical" href="https://sapropels.paleogenomics.eu/explorer/">
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+    <link rel="alternate" type="text/plain" href="../llms.txt" title="Machine-readable site description">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../styles.css?v=91">
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/tokens.css">
+    <link rel="stylesheet" href="../css/explorer.css">
+    <script src="../js/theme.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" integrity="sha512-vc58qvvBdrDR4etbxMdlTt4GBQk1qjvyORR2nrsPsFPyrs+/u5c3+1Ct6upOgdZoIl7eq6k3a1UPDSNAQi/32A==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
 </head>
-<body>
+<body class="explorer">
+    <a class="skip-link" href="#table-heading">Skip to the taxa table</a>
+
     <div class="app">
-        <!-- Header -->
-        <header class="header">
-            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="3" y1="6" x2="21" y2="6"/>
-                    <line x1="3" y1="12" x2="21" y2="12"/>
-                    <line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
+        <header class="topbar">
+            <button type="button" class="btn btn-icon rail-toggle" id="rail-toggle" aria-controls="sample-rail" aria-expanded="false" aria-label="Show sample list">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
             </button>
-            <a href="../" class="logo" style="text-decoration: none;">
-                <div class="logo-icon">
-                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                </div>
-                <div class="logo-text">Sapropel <span>Microbial Explorer</span></div>
-            </a>
+            <a href="../" class="wordmark"><span class="wordmark-mark" aria-hidden="true"></span>Sapropel smiley plots</a>
 
-            <div class="search-trigger" id="search-trigger">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <span class="placeholder">Search taxa across samples...</span>
-                <kbd>⌘K</kbd>
-            </div>
+            <button type="button" class="search-trigger" id="search-trigger" aria-haspopup="dialog">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <span>Search taxa in all samples</span>
+                <kbd aria-hidden="true">/</kbd>
+            </button>
 
-            <div class="header-actions">
-                <button class="btn btn-compare" id="compare-samples-btn" title="Compare selected samples (select samples in sidebar)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="6" cy="12" r="4"/>
-                        <circle cx="18" cy="12" r="4"/>
-                        <path d="M10 12h4" stroke-dasharray="2 2"/>
-                    </svg>
-                    <span>Compare Samples</span>
+            <nav class="topbar-actions" aria-label="Tools">
+                <button type="button" class="btn" id="compare-samples-btn" aria-haspopup="dialog">
+                    <span>Compare samples</span><span class="count-badge" id="compare-samples-count" hidden>0</span>
                 </button>
-                <button class="btn btn-taxa" id="compare-taxa-btn" title="Compare taxa across samples">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-                    </svg>
-                    <span>Compare Taxa</span>
+                <button type="button" class="btn" id="compare-taxa-btn" aria-haspopup="dialog">
+                    <span>Compare taxa</span><span class="count-badge" id="compare-taxa-count" hidden>0</span>
                 </button>
-                <button class="btn btn-secondary" id="export-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    <span>Export</span>
+                <button type="button" class="btn" id="share-btn">Copy link</button>
+                <button type="button" class="btn" id="export-btn">Export CSV</button>
+                <a href="../help.html" class="btn btn-ghost">Help</a>
+                <button type="button" class="btn btn-ghost btn-icon theme-toggle" data-theme-toggle aria-label="Switch theme">
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
                 </button>
-                <a href="../help.html" class="btn btn-ghost" title="Help & Documentation">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    <span>Help</span>
-                </a>
-            </div>
+            </nav>
         </header>
 
-        <!-- Main workspace -->
-        <div class="workspace" id="workspace">
-            <!-- Sidebar overlay (mobile) -->
-            <div class="sidebar-overlay" id="sidebar-overlay"></div>
-            <!-- Sidebar -->
-            <aside class="sidebar" id="sidebar">
-                <div class="sidebar-section">
-                    <div class="sidebar-header">
-                        Samples
-                        <span class="count" id="sample-count">0</span>
-                    </div>
-                </div>
-                <div class="sample-list" id="sample-list">
-                    <div class="loading-state">
-                        <div class="loading-spinner"></div>
-                        <span>Loading samples...</span>
-                    </div>
-                </div>
+        <div class="workspace">
+            <div class="rail-scrim" id="rail-scrim"></div>
+            <aside class="rail" id="sample-rail" aria-labelledby="rail-heading">
+                <h2 id="rail-heading">Samples <span class="count" id="sample-count"></span></h2>
+                <p class="rail-note">Ordered by age, youngest at the top. A dark band marks a sapropel layer.</p>
+                <ol class="sample-list" id="sample-list"></ol>
+                <p class="rail-note">Tick two or more samples, then choose “Compare samples”.</p>
             </aside>
 
-            <!-- Main panel -->
-            <main class="main-panel">
-                <!-- Toolbar -->
-                <div class="toolbar">
-                    <div class="toolbar-group">
-                        <div class="status-filter" id="status-filter">
-                            <button class="active" data-status="all">All</button>
-                            <button data-status="damaged">Damaged</button>
-                            <button data-status="non-damaged">Non-damaged</button>
-                        </div>
-                    </div>
-
-                    <div class="toolbar-divider"></div>
-
-                    <div class="toolbar-group">
-                        <div class="filter-chip">
-                            <label>Damage ≥</label>
-                            <input type="number" id="filter-damage" value="0" min="0" max="1" step="0.01">
-                        </div>
-                        <div class="filter-chip">
-                            <label>Significance ≥</label>
-                            <input type="number" id="filter-significance" value="0" min="0" step="0.5">
-                        </div>
-                        <div class="filter-chip">
-                            <label>Reads ≥</label>
-                            <input type="number" id="filter-reads" value="0" min="0" step="100">
-                        </div>
-                    </div>
-
-                    <div style="flex:1"></div>
-
-                    <div class="toolbar-group">
-                        <div class="filter-indicator" id="filter-indicator">
-                            <span class="filter-label">Filter:</span>
-                            <div class="filter-path-chips" id="filter-path-chips"></div>
-                            <button class="filter-clear-btn" id="filter-clear-btn" onclick="clearAllFilters()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            </button>
-                        </div>
-                    </div>
+            <main class="main" id="main" aria-busy="true">
+                <div class="intro" id="intro" hidden>
+                    <p>Choose a sample on the left. Select a segment of the sunburst to narrow the table to that group;
+                       select a table row to open the smiley plot and coverage statistics of that reference genome.
+                       <a href="../help.html#smiley">How to read a smiley plot</a></p>
+                    <button type="button" class="btn btn-sm" id="intro-dismiss">Hide</button>
                 </div>
 
-                <!-- Content area - resizable split -->
-                <div class="content-area">
-                    <!-- Sunburst panel -->
-                    <div class="sunburst-panel" id="sunburst-panel">
-                        <div class="panel-header">
-                            <h3>Taxonomy</h3>
-                        </div>
-                        <div class="sunburst-container" id="sunburst-container">
-                            <svg id="sunburst"></svg>
-                            <div class="sunburst-center" id="sunburst-center">
-                                <button class="center-back-btn" id="center-back-btn" title="Go back" onclick="goBackOneLevel()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-                                </button>
-                                <h4>All Taxa</h4>
-                                <p>Click to filter</p>
-                            </div>
-                        </div>
-                        <div class="sunburst-legend-card">
-                            <div class="legend-section">
-                                <span class="legend-section-title">Domain</span>
-                                <div class="sunburst-legend" id="sunburst-legend-domain"></div>
-                            </div>
-                            <div class="legend-divider"></div>
-                            <div class="legend-section">
-                                <span class="legend-section-title">Status</span>
-                                <div class="sunburst-legend" id="sunburst-legend-status"></div>
-                            </div>
-                        </div>
-                        <div class="sunburst-hidden-count" id="sunburst-hidden-count" style="display:none"></div>
-                        <div class="sunburst-breadcrumb" id="sunburst-breadcrumb">
-                            <span>Hover to explore</span>
-                        </div>
+                <div class="toolbar" role="group" aria-label="Filters">
+                    <div class="segmented" id="status-filter" role="group" aria-label="Damage status">
+                        <button type="button" data-status="all" aria-pressed="true">All</button>
+                        <button type="button" data-status="damaged" aria-pressed="false">Damaged</button>
+                        <button type="button" data-status="non-damaged" aria-pressed="false">Non-damaged</button>
                     </div>
+                    <label class="field field-text"><span>Name contains</span>
+                        <input type="search" id="filter-text" autocomplete="off" spellcheck="false" placeholder="e.g. Prochlorococcus"></label>
+                    <label class="field"><span>Damage ≥</span>
+                        <input type="number" id="filter-damage" min="0" max="1" step="0.01" placeholder="0" inputmode="decimal"></label>
+                    <label class="field"><span>Significance ≥</span>
+                        <input type="number" id="filter-significance" min="0" step="0.5" placeholder="0" inputmode="decimal"></label>
+                    <label class="field"><span>Reads ≥</span>
+                        <input type="number" id="filter-reads" min="0" step="100" placeholder="0" inputmode="numeric"></label>
+                    <button type="button" class="btn btn-sm" id="clear-filters" hidden>Clear filters</button>
+                </div>
 
-                    <!-- Resizable divider -->
-                    <div class="resize-handle" id="resize-handle">
-                        <div class="resize-line"></div>
-                    </div>
+                <div class="content">
+                    <section class="sunburst-panel" id="sunburst-panel" aria-labelledby="sunburst-heading">
+                        <header class="panel-header">
+                            <h2 id="sunburst-heading">Taxonomy by reads</h2>
+                            <button type="button" class="btn btn-sm" id="sunburst-up" hidden>Up one level</button>
+                        </header>
+                        <nav class="breadcrumb" id="sunburst-breadcrumb" aria-label="Taxonomy level"></nav>
+                        <div class="sunburst-figure" id="sunburst-figure">
+                            <svg id="sunburst" role="img" aria-labelledby="sunburst-heading" aria-describedby="sunburst-summary"></svg>
+                            <div class="sunburst-centre" aria-hidden="true">
+                                <strong id="sunburst-centre-title"></strong>
+                                <span id="sunburst-centre-sub"></span>
+                            </div>
+                            <p class="sunburst-empty" id="sunburst-empty" hidden>No taxa match the filters.</p>
+                        </div>
+                        <p class="visually-hidden" id="sunburst-summary"></p>
+                        <div class="legend" id="sunburst-legend"></div>
+                        <div class="levels" id="sunburst-levels"></div>
+                    </section>
 
-                    <!-- Table panel -->
-                    <div class="table-panel" id="table-panel">
-                        <div class="table-container" id="table-container">
-                            <table class="data-table" id="data-table">
+                    <div class="resize-handle" id="resize-handle" role="separator" aria-orientation="vertical" tabindex="0" aria-label="Resize the taxonomy panel with the left and right arrow keys"></div>
+
+                    <section class="table-panel" aria-labelledby="table-heading">
+                        <h2 class="visually-hidden" id="table-heading" tabindex="-1">Reference genomes in the selected sample</h2>
+                        <div class="table-scroll">
+                            <table class="taxa-table">
                                 <thead>
                                     <tr>
-                                        <th style="width:40px"></th>
-                                        <th data-sort="species">Species <span class="sort-icon">↕</span></th>
-                                        <th data-sort="genus">Genus <span class="sort-icon">↕</span></th>
-                                        <th data-sort="family">Family <span class="sort-icon">↕</span></th>
-                                        <th data-sort="damage" class="sorted">Damage <span class="sort-icon">↓</span></th>
-                                        <th data-sort="significance">Signif. <span class="sort-icon">↕</span></th>
-                                        <th data-sort="n_reads">Reads <span class="sort-icon">↕</span></th>
-                                        <th data-sort="n_alns">Alns <span class="sort-icon">↕</span></th>
-                                        <th>Status</th>
+                                        <th scope="col" class="cell-check"><span class="visually-hidden">Compare</span></th>
+                                        <th scope="col" data-sort="species" aria-sort="none"><button type="button">Species and reference</button></th>
+                                        <th scope="col" data-sort="family" aria-sort="none"><button type="button">Family</button></th>
+                                        <th scope="col" data-sort="damage" aria-sort="descending"><button type="button" title="metaDMG damage estimate (amplitude A)">Damage</button></th>
+                                        <th scope="col" data-sort="significance" aria-sort="none" class="num"><button type="button" title="Damage divided by its standard deviation (Z)">Signif.</button></th>
+                                        <th scope="col" data-sort="n_reads" aria-sort="none" class="num"><button type="button">Reads</button></th>
+                                        <th scope="col">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody id="table-body">
-                                </tbody>
+                                <tbody id="table-body"></tbody>
                             </table>
                         </div>
+                    </section>
+
+                    <aside class="detail-panel" id="detail-panel" aria-labelledby="detail-title" inert>
+                        <header class="panel-header">
+                            <h2 id="detail-title">Taxon</h2>
+                            <button type="button" class="btn btn-ghost btn-icon" id="detail-close" aria-label="Close taxon details">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                            </button>
+                        </header>
+                        <div class="detail-content" id="detail-content"></div>
+                    </aside>
+
+                    <div class="loading" id="loading" role="status">
+                        <span class="spinner" aria-hidden="true"></span>
+                        <span id="loading-text">Loading…</span>
                     </div>
 
-                    <!-- Detail panel (slides in from right) -->
-                    <aside class="detail-panel" id="detail-panel">
-                        <div class="detail-header">
-                            <h3 id="detail-species">Select a taxon</h3>
-                            <button class="detail-close-btn" id="detail-close-btn" title="Close">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            </button>
-                        </div>
-                        <div class="detail-content" id="detail-content">
-                            <div class="empty-state small">
-                                <p>Click a row to view damage profile</p>
-                            </div>
-                        </div>
-                    </aside>
+                    <div class="fatal" id="fatal" role="alert" hidden>
+                        <h2>The explorer could not start</h2>
+                        <p></p>
+                        <ul>
+                            <li><a href="../meta.parquet" download>meta.parquet</a></li>
+                            <li><a href="../freq.parquet" download>freq.parquet</a></li>
+                            <li><a href="../data/README.md">Column descriptions</a></li>
+                        </ul>
+                    </div>
                 </div>
             </main>
         </div>
 
-        <!-- Status bar -->
-        <footer class="status-bar">
-            <div class="status-left">
-                <div class="status-item">
-                    <span>Sample:</span>
-                    <span class="value" id="status-sample">-</span>
-                </div>
-                <div class="status-item">
-                    <span>Showing:</span>
-                    <span class="value" id="status-showing">0</span>
-                    <span>of</span>
-                    <span class="value" id="status-total">0</span>
-                </div>
-                <div class="status-item">
-                    <span>Selected:</span>
-                    <span class="value" id="status-selected">0</span>
-                </div>
-            </div>
-            <div class="status-right">
-                <span>DuckDB-WASM</span>
-            </div>
+        <footer class="statusbar">
+            <p aria-live="polite">
+                <span class="mono" id="status-sample">–</span>:
+                <span id="status-showing">0</span> of <span id="status-total">0</span> reference genomes shown
+            </p>
+            <p id="threshold-note"></p>
+            <p><a href="../help.html#status">How status is assigned</a></p>
         </footer>
     </div>
 
-    <!-- Compare samples overlay -->
-    <div class="compare-overlay" id="compare-overlay">
-        <div class="compare-modal">
-            <div class="compare-header">
-                <div>
-                    <h2>Compare Samples</h2>
-                    <p class="compare-subtitle" id="compare-subtitle">Comparing taxonomy distributions</p>
-                </div>
-                <button class="compare-close" id="compare-close">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
-            <div class="compare-body">
-                <div class="compare-sunburst-grid" id="compare-sunburst-grid">
-                    <!-- Sunbursts will be rendered here -->
-                </div>
-                <div class="compare-filter-info" id="compare-filter-info">
-                    <span>Click on any segment to filter all views</span>
-                </div>
-            </div>
+    <div class="visually-hidden" id="sr-status" aria-live="polite"></div>
+
+    <div class="overlay overlay-top" id="search-overlay">
+        <div class="dialog search-dialog">
+            <label class="visually-hidden" for="search-input">Search taxa in all samples</label>
+            <input type="search" id="search-input" role="combobox" aria-expanded="false" aria-controls="search-results"
+                   aria-autocomplete="list" aria-describedby="search-hint" autocomplete="off" spellcheck="false"
+                   placeholder="Species, genus, family or reference accession">
+            <ul id="search-results" role="listbox" aria-label="Matching taxa"></ul>
+            <p class="search-hint" id="search-hint">Type at least two letters of a species, genus or family name, or a reference accession.</p>
         </div>
     </div>
 
-    <!-- Command palette -->
-    <div class="command-overlay" id="command-overlay">
-        <div class="command-palette">
-            <div class="command-input-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <input type="text" class="command-input" id="command-input" placeholder="Search taxa across all samples...">
-            </div>
-            <div class="command-results" id="command-results">
-                <div class="command-hint">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                    </svg>
-                    <p>Search for taxa across all samples</p>
-                    <span class="hint-example">e.g. "Streptococcus", "Lactobacillus"</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="overlay" id="compare-overlay"></div>
 
-    <script type="module" src="../js/app.js?v=91"></script>
+    <noscript>
+        <p class="noscript">The explorer needs JavaScript. The data can be downloaded as
+            <a href="../meta.parquet">meta.parquet</a> and <a href="../freq.parquet">freq.parquet</a>;
+            columns are described in <a href="../data/README.md">data/README.md</a>.</p>
+    </noscript>
+
+    <script type="module" src="../js/app.js"></script>
 </body>
 </html>

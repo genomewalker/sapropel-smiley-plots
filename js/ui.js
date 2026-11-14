@@ -1,352 +1,267 @@
-// ========== UI EVENT LISTENERS ==========
-import { state } from './state.js?v=91';
-import { applyFilters, exportData, loadSamples } from './data.js?v=91';
-import { cleanName, getStatus, pct, fmt, convertResults } from './utils.js?v=91';
+// Event wiring for the explorer shell: toolbar, table, sample rail, search.
+// Everything is attached once; lists are handled by delegation.
+import { state } from './state.js';
+import { searchTaxa, exportCurrentTable } from './data.js';
+import { refresh, selectSample, selectReference, closeDetailPanel, setFilterPath, clearFilters,
+    toggleCompare, toggleSampleCompare, trackTaxon } from './actions.js';
+import { cleanName, escapeHtml, fmt, announce } from './utils.js';
+import { openDialog, closeDialog, hasOpenDialog } from './dialog.js';
+import { currentUrl } from './url-state.js';
+import { openComparePanel } from './compare.js';
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-function getDefaultCommandResults() {
-    return `
-        <div class="command-hint">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            <p>Search for taxa across all samples</p>
-            <span class="hint-example">e.g. "Streptococcus", "Lactobacillus"</span>
-        </div>
-    `;
-}
-
-async function performCrossSampleSearch(query) {
-    if (!state.conn) return;
-
-    const resultsContainer = document.getElementById('command-results');
-    resultsContainer.innerHTML = `
-        <div class="command-loading">
-            <div class="loading-spinner small"></div>
-            <span>Searching across all samples...</span>
-        </div>
-    `;
-
-    try {
-        const escapedQuery = query.replace(/'/g, "''").toLowerCase();
-
-        // Search across all samples - aggregate to get correct counts
-        const result = await state.conn.query(`
-            SELECT
-                COALESCE(species, genus, family) as taxon_name,
-                CASE
-                    WHEN species IS NOT NULL THEN 'species'
-                    WHEN genus IS NOT NULL THEN 'genus'
-                    ELSE 'family'
-                END as taxon_level,
-                COUNT(DISTINCT sample) as sample_count,
-                MAX(damage) as max_damage,
-                SUM(n_reads) as total_reads,
-                SUM(CASE WHEN damage >= 0.11 AND significance >= 2 AND n_reads >= 100 THEN 1 ELSE 0 END) as damaged_count
-            FROM meta
-            WHERE (domain = 'd__Bacteria' OR domain = 'd__Archaea')
-              AND (
-                LOWER(species) LIKE '%${escapedQuery}%'
-                OR LOWER(genus) LIKE '%${escapedQuery}%'
-                OR LOWER(family) LIKE '%${escapedQuery}%'
-                OR LOWER(phylum) LIKE '%${escapedQuery}%'
-              )
-            GROUP BY COALESCE(species, genus, family),
-                     CASE
-                         WHEN species IS NOT NULL THEN 'species'
-                         WHEN genus IS NOT NULL THEN 'genus'
-                         ELSE 'family'
-                     END
-            ORDER BY sample_count DESC, max_damage DESC
-            LIMIT 15
-        `);
-
-        const uniqueTaxa = convertResults(result);
-
-        if (uniqueTaxa.length === 0) {
-            resultsContainer.innerHTML = `
-                <div class="command-empty">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-                    </svg>
-                    <p>No matches found for "${escapeHtml(query)}"</p>
-                </div>
-            `;
-            return;
-        }
-
-        resultsContainer.innerHTML = `
-            <div class="command-group">
-                <div class="command-group-title">Taxa across samples</div>
-                ${uniqueTaxa.map(t => `
-                    <div class="command-item taxon-result"
-                         onclick="searchSelectTaxon('${escapeHtml(t.taxon_name)}', '${t.taxon_level}')">
-                        <div class="command-item-icon taxon-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="3"/>
-                                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-                            </svg>
-                        </div>
-                        <div class="command-item-content">
-                            <div class="command-item-title">${cleanName(t.taxon_name)}</div>
-                            <div class="command-item-desc">
-                                <span class="sample-count">${t.sample_count} sample${t.sample_count > 1 ? 's' : ''}</span>
-                                ${t.damaged_count > 0 ? `<span class="status-badge damaged">${t.damaged_count} damaged</span>` : ''}
-                            </div>
-                        </div>
-                        <div class="command-item-action">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="9 18 15 12 9 6"/>
-                            </svg>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    } catch (err) {
-        console.error('Search error:', err);
-        resultsContainer.innerHTML = `
-            <div class="command-empty">
-                <p>Search error. Try again.</p>
-            </div>
-        `;
-    }
-}
-
-// Global function for search result clicks
-window.searchSelectTaxon = function(taxonName, level) {
-    // Close command palette
-    document.getElementById('command-overlay').classList.remove('open');
-    document.getElementById('command-input').value = '';
-
-    // Unescape HTML entities for the SQL query
-    const unescaped = taxonName
-        .replace(/&#39;/g, "'")
-        .replace(/&quot;/g, '"')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&amp;/g, '&');
-
-    // Open tracking modal for this taxon
-    import('./compare.js?v=91').then(({ trackTaxonAcrossSamples }) => {
-        trackTaxonAcrossSamples(unescaped, level);
-    });
-};
-
-// Open/close taxonomy overlay
-export function openTaxonomyOverlay() {
-    document.getElementById('taxonomy-overlay').classList.add('open');
-}
-
-export function closeTaxonomyOverlay() {
-    document.getElementById('taxonomy-overlay').classList.remove('open');
-}
-
-// Open/close detail panel
-export function openDetailPanel() {
-    document.getElementById('detail-panel').classList.add('open');
-}
-
-export function closeDetailPanel() {
-    document.getElementById('detail-panel').classList.remove('open');
-    state.selectedRef = null;
-    // Deselect table row
-    document.querySelectorAll('.data-table tbody tr.selected').forEach(tr => tr.classList.remove('selected'));
-}
-
-// Update filter bar display
-export function updateFilterBar() {
-    const filterIndicator = document.getElementById('filter-indicator');
-    const chipsContainer = document.getElementById('filter-path-chips');
-
-    if (!filterIndicator || !chipsContainer) return;
-
-    if (state.filterPath.length === 0) {
-        filterIndicator.classList.remove('visible');
-        return;
-    }
-
-    filterIndicator.classList.add('visible');
-
-    // Create chips for each level in the filter path
-    const levelNames = ['Domain', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species'];
-    chipsContainer.innerHTML = state.filterPath.map((taxon, i) => {
-        const cleanTaxon = taxon.replace(/^[dpcofgs]__/, '');
-        const level = levelNames[i] || '';
-        return `
-            <span class="filter-chip-item" data-index="${i}" onclick="window.navigateToFilterLevel(${i})">
-                <span class="chip-level">${level}</span>
-                ${cleanTaxon}
-            </span>
-        `;
-    }).join('');
-}
+const $ = (id) => document.getElementById(id);
 
 export function setupEventListeners() {
-    // Status filter — sunburst stays put, overlay opacity transitions instead
+    setupToolbar();
+    setupTable();
+    setupSampleRail();
+    setupSearch();
+    setupResizeHandle();
+
+    $('detail-close').addEventListener('click', () => closeDetailPanel());
+    const intro = $('intro');
+    let introSeen = false;
+    try { introSeen = localStorage.getItem('sap-intro-dismissed') === '1'; } catch (e) { /* storage unavailable */ }
+    intro.hidden = introSeen;
+    $('intro-dismiss').addEventListener('click', () => {
+        intro.hidden = true;
+        try { localStorage.setItem('sap-intro-dismissed', '1'); } catch (e) { /* storage unavailable */ }
+    });
+
+    $('sunburst-up').addEventListener('click', () => setFilterPath(state.filterPath.slice(0, -1)));
+    $('clear-filters').addEventListener('click', clearFilters);
+
+    $('export-btn').addEventListener('click', () => {
+        const count = exportCurrentTable();
+        announce(`Exported ${fmt(count)} rows as CSV.`);
+    });
+    $('share-btn').addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(currentUrl());
+            announce('Link to this view copied.');
+        } catch (e) {
+            announce('Copying failed. Copy the address from the browser bar.', { tone: 'error' });
+        }
+    });
+    $('compare-samples-btn').addEventListener('click', async () => {
+        const { openCompareSamples } = await import('./compare-samples.js');
+        openCompareSamples();
+    });
+    $('compare-taxa-btn').addEventListener('click', openComparePanel);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !hasOpenDialog() && state.selectedRef != null) closeDetailPanel();
+    });
+}
+
+function setupToolbar() {
     document.querySelectorAll('#status-filter button').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('#status-filter button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
             state.filters.status = btn.dataset.status;
-            applyFilters({ rebuildSunburst: false });
+            document.querySelectorAll('#status-filter button').forEach(b =>
+                b.setAttribute('aria-pressed', String(b === btn)));
+            refresh({ rebuildSunburst: false });
         });
     });
 
-    // Numeric filters
-    ['filter-damage', 'filter-significance', 'filter-reads'].forEach(id => {
-        document.getElementById(id).addEventListener('change', (e) => {
-            const key = id.replace('filter-', '');
-            state.filters[key === 'damage' ? 'minDamage' : key === 'significance' ? 'minSignificance' : 'minReads'] =
-                parseFloat(e.target.value) || 0;
-            applyFilters();
+    const numeric = { 'filter-damage': 'minDamage', 'filter-significance': 'minSignificance', 'filter-reads': 'minReads' };
+    Object.entries(numeric).forEach(([id, key]) => {
+        $(id).addEventListener('change', (e) => {
+            state.filters[key] = Math.max(0, parseFloat(e.target.value) || 0);
+            refresh();
         });
     });
 
-    // Table sorting
-    document.querySelectorAll('.data-table th[data-sort]').forEach(th => {
-        th.addEventListener('click', () => {
-            const col = th.dataset.sort;
+    let timer = null;
+    $('filter-text').addEventListener('input', (e) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            state.filters.search = e.target.value.trim();
+            refresh();
+        }, 180);
+    });
+}
+
+function setupTable() {
+    document.querySelectorAll('.taxa-table th[data-sort] button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const col = btn.parentElement.dataset.sort;
             if (state.sortColumn === col) {
                 state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
             } else {
                 state.sortColumn = col;
-                state.sortDirection = 'desc';
+                state.sortDirection = ['species', 'family'].includes(col) ? 'asc' : 'desc';
             }
-
-            // Update header styles
-            document.querySelectorAll('.data-table th').forEach(h => {
-                h.classList.remove('sorted');
-                const icon = h.querySelector('.sort-icon');
-                if (icon) icon.textContent = '↕';
-            });
-            th.classList.add('sorted');
-            th.querySelector('.sort-icon').textContent = state.sortDirection === 'asc' ? '↑' : '↓';
-
-            applyFilters();
+            refresh({ rebuildSunburst: false });
         });
     });
 
-    // Taxonomy overlay toggle
-    const taxonomyBtn = document.getElementById('taxonomy-btn');
-    const taxonomyOverlay = document.getElementById('taxonomy-overlay');
-    const taxonomyClose = document.getElementById('taxonomy-close');
-
-    if (taxonomyBtn) {
-        taxonomyBtn.addEventListener('click', openTaxonomyOverlay);
-    }
-
-    if (taxonomyClose) {
-        taxonomyClose.addEventListener('click', closeTaxonomyOverlay);
-    }
-
-    if (taxonomyOverlay) {
-        taxonomyOverlay.addEventListener('click', (e) => {
-            if (e.target === taxonomyOverlay) {
-                closeTaxonomyOverlay();
-            }
-        });
-    }
-
-    // Detail panel close button
-    const detailCloseBtn = document.getElementById('detail-close-btn');
-    if (detailCloseBtn) {
-        detailCloseBtn.addEventListener('click', closeDetailPanel);
-    }
-
-    // Command palette
-    const overlay = document.getElementById('command-overlay');
-    const input = document.getElementById('command-input');
-
-    document.getElementById('search-trigger').addEventListener('click', () => {
-        overlay.classList.add('open');
-        input.focus();
+    const tbody = $('table-body');
+    tbody.addEventListener('click', (e) => {
+        if (e.target.closest('[data-action="clear-filters"]')) return clearFilters();
+        if (e.target.closest('.cell-check')) return;    // checkbox handled on change
+        const row = e.target.closest('tr[data-id]');
+        if (row) selectReference(Number(row.dataset.id));
     });
-
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-            overlay.classList.remove('open');
-        }
+    tbody.addEventListener('change', (e) => {
+        if (e.target.matches('input[type="checkbox"][data-id]')) toggleCompare(Number(e.target.dataset.id));
     });
-
-    document.addEventListener('keydown', (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    tbody.addEventListener('keydown', (e) => {
+        const row = e.target.closest('tr[data-id]');
+        if (!row || e.target !== row) return;
+        if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            overlay.classList.toggle('open');
-            if (overlay.classList.contains('open')) {
-                input.focus();
-            }
-        }
-        if (e.key === 'Escape') {
-            overlay.classList.remove('open');
-            closeTaxonomyOverlay();
-            closeDetailPanel();
+            selectReference(Number(row.dataset.id));
+        } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const next = e.key === 'ArrowDown' ? row.nextElementSibling : row.previousElementSibling;
+            if (next) next.focus();
         }
     });
+}
 
-    // Debounce for cross-sample search
-    let searchTimeout = null;
-    input.addEventListener('input', (e) => {
-        const query = e.target.value.trim();
+function setupSampleRail() {
+    const list = $('sample-list');
+    const rail = $('sample-rail');
+    const toggle = $('rail-toggle');
+    const setRail = (open) => {
+        rail.classList.toggle('open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+    };
+    toggle.addEventListener('click', () => setRail(!rail.classList.contains('open')));
+    $('rail-scrim').addEventListener('click', () => setRail(false));
 
-        // Clear previous timeout
-        if (searchTimeout) clearTimeout(searchTimeout);
+    list.addEventListener('click', (e) => {
+        const pick = e.target.closest('.sample-pick');
+        if (!pick) return;
+        setRail(false);
+        selectSample(pick.closest('.sample-row').dataset.sample);
+    });
+    list.addEventListener('change', (e) => {
+        if (e.target.matches('input[type="checkbox"]')) {
+            const sample = e.target.dataset.sample;
+            toggleSampleCompare(sample);
+            // The list was re-rendered; put focus back on the same checkbox.
+            const again = [...list.querySelectorAll('input[type="checkbox"]')].find(el => el.dataset.sample === sample);
+            if (again) again.focus();
+        }
+    });
+}
 
-        if (query.length < 2) {
-            // Clear results and show default actions
-            document.getElementById('command-results').innerHTML = getDefaultCommandResults();
+/** Search across all samples: a combobox with a listbox of grouped taxa. */
+function setupSearch() {
+    const overlay = $('search-overlay');
+    const input = $('search-input');
+    const results = $('search-results');
+    const hint = $('search-hint');
+    let hits = [];
+    let active = -1;
+    let timer = null;
+    let seq = 0;
+
+    const open = () => {
+        openDialog(overlay, { label: 'Search taxa in all samples', initialFocus: '#search-input' });
+        input.select();
+    };
+    $('search-trigger').addEventListener('click', open);
+    document.addEventListener('keydown', (e) => {
+        const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); open(); }
+        else if (e.key === '/' && !typing && !hasOpenDialog()) { e.preventDefault(); open(); }
+    });
+
+    const setActive = (i) => {
+        active = i;
+        results.querySelectorAll('[role="option"]').forEach((el, j) => {
+            el.setAttribute('aria-selected', String(j === i));
+            if (j === i) el.scrollIntoView({ block: 'nearest' });
+        });
+        input.setAttribute('aria-activedescendant', i >= 0 ? `search-opt-${i}` : '');
+    };
+
+    const choose = (i) => {
+        const hit = hits[i];
+        if (!hit) return;
+        closeDialog(overlay);
+        trackTaxon(hit.name, hit.level);
+    };
+
+    const render = (query) => {
+        input.setAttribute('aria-expanded', String(hits.length > 0));
+        if (hits.length === 0) {
+            results.innerHTML = '';
+            hint.textContent = `No species, genus or family name contains “${query}”. Bacterial and archaeal names are GTDB-style, e.g. Prochlorococcus_A.`;
             return;
         }
+        hint.textContent = `${hits.length} match${hits.length === 1 ? '' : 'es'}. Enter opens the taxon in every sample where it occurs.`;
+        results.innerHTML = hits.map((t, i) => `
+            <li role="option" id="search-opt-${i}" data-i="${i}" aria-selected="false">
+                <span class="opt-level">${t.level}</span>
+                <span class="opt-name">${escapeHtml(cleanName(t.name))}</span>
+                <span class="opt-meta">${t.sample_count} of ${state.samples.length} samples, ${fmt(t.row_count)} genomes, ${fmt(t.damaged_count)} damaged</span>
+            </li>`).join('');
+        setActive(0);
+    };
 
-        // Debounce the search
-        searchTimeout = setTimeout(() => {
-            performCrossSampleSearch(query);
-        }, 200);
+    input.addEventListener('input', () => {
+        const query = input.value.trim();
+        clearTimeout(timer);
+        if (query.length < 2) {
+            hits = [];
+            results.innerHTML = '';
+            input.setAttribute('aria-expanded', 'false');
+            hint.textContent = 'Type at least two letters of a species, genus or family name, or a reference accession.';
+            return;
+        }
+        timer = setTimeout(async () => {
+            const mine = ++seq;
+            hint.textContent = 'Searching…';
+            try {
+                const found = await searchTaxa(query);
+                if (mine !== seq) return;      // a newer query has started
+                hits = found;
+                render(query);
+            } catch (err) {
+                console.error(err);
+                hint.textContent = `Search failed: ${err.message}`;
+            }
+        }, 160);
     });
 
-    // Export
-    document.getElementById('export-btn').addEventListener('click', exportData);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActive(Math.min(active + 1, hits.length - 1)); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(Math.max(active - 1, 0)); }
+        else if (e.key === 'Enter') { e.preventDefault(); choose(active); }
+    });
+    results.addEventListener('click', (e) => {
+        const li = e.target.closest('[role="option"]');
+        if (li) choose(Number(li.dataset.i));
+    });
+}
 
-    // Compare button (basket comparison)
-    const compareBtn = document.getElementById('compare-btn');
-    if (compareBtn) {
-        compareBtn.addEventListener('click', () => {
-            import('./compare.js?v=91').then(({ openComparePanel }) => {
-                openComparePanel();
-            });
-        });
-    }
+/** Drag or use the arrow keys on the separator to resize the sunburst panel. */
+function setupResizeHandle() {
+    const handle = $('resize-handle');
+    const panel = $('sunburst-panel');
+    const area = panel.parentElement;
+    const clamp = (w) => Math.min(Math.max(300, w), area.offsetWidth * 0.55);
+    const setWidth = (w) => { panel.style.width = clamp(w) + 'px'; };
 
-    // Mobile menu toggle
-    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
-
-    if (mobileMenuBtn && sidebar && sidebarOverlay) {
-        mobileMenuBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-            sidebarOverlay.classList.toggle('open');
-            mobileMenuBtn.classList.toggle('open');
-        });
-
-        sidebarOverlay.addEventListener('click', () => {
-            sidebar.classList.remove('open');
-            sidebarOverlay.classList.remove('open');
-            mobileMenuBtn.classList.remove('open');
-        });
-    }
-
-    // Close mobile sidebar when a sample is selected
-    document.getElementById('sample-list').addEventListener('click', (e) => {
-        const sampleItem = e.target.closest('.sample-item');
-        if (sampleItem && window.innerWidth <= 768) {
-            sidebar.classList.remove('open');
-            sidebarOverlay.classList.remove('open');
-            mobileMenuBtn.classList.remove('open');
-        }
+    handle.addEventListener('pointerdown', (e) => {
+        const startX = e.clientX, startW = panel.offsetWidth;
+        handle.setPointerCapture(e.pointerId);
+        const move = (ev) => setWidth(startW + ev.clientX - startX);
+        const up = () => {
+            handle.removeEventListener('pointermove', move);
+            handle.removeEventListener('pointerup', up);
+            window.dispatchEvent(new Event('resize'));
+        };
+        handle.addEventListener('pointermove', move);
+        handle.addEventListener('pointerup', up);
+        e.preventDefault();
+    });
+    handle.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') setWidth(panel.offsetWidth - 24);
+        if (e.key === 'ArrowRight') setWidth(panel.offsetWidth + 24);
     });
 }
