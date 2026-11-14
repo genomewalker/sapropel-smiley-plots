@@ -1,0 +1,73 @@
+# Sapropel smiley plots
+
+> Ancient-DNA damage estimates (metaDMG) and coverage statistics (filterBAM) for bacterial, archaeal and viral reference genomes in sediment samples from eastern Mediterranean cores GeoB15103-1, -2 and -3: sapropels S1, S3, S5 and S6 and non-sapropel intervals, 0.7–173 ka. Reads were mapped competitively against the reference genomes. Static site; all data files are public and can be read without the web interface.
+
+Site: https://sapropels.paleogenomics.eu/
+Article: Fernandez-Guerra et al., in review (reference and DOI not yet available).
+
+## Pages
+
+- [Front page](https://sapropels.paleogenomics.eu/): sample table, how to read a smiley plot, data files
+- [Explorer](https://sapropels.paleogenomics.eu/explorer/): interactive view; needs JavaScript and WebAssembly (DuckDB-WASM)
+- [Help](https://sapropels.paleogenomics.eu/help.html): plots, metrics, damage status rule, URL parameters
+
+## Data files
+
+- [meta.parquet](https://sapropels.paleogenomics.eu/meta.parquet): one row per (sample, reference genome). Key: `id`; `(sample, reference)` is also unique.
+- [freq.parquet](https://sapropels.paleogenomics.eu/freq.parquet): per-position substitution data for the same rows. Join on `id`.
+- [samples.json](https://sapropels.paleogenomics.eu/samples.json): array of `{sample, specific_feature, age_ka, core, sort_order}`.
+- [config.json](https://sapropels.paleogenomics.eu/config.json): `damage_threshold`, `threshold_ref_sample`, `build_id` (Unix time of the build), `qc`, `min_reads`, `ranks`.
+- [data/README.md](https://sapropels.paleogenomics.eu/data/README.md): column descriptions and example queries.
+- [data/schema.json](https://sapropels.paleogenomics.eu/data/schema.json): every column with its type.
+
+Read counts, thresholds and row counts change when the data are rebuilt. Take them from the files, not from this text.
+
+## Main columns of meta.parquet
+
+- `sample`: sample name, e.g. `GeoB15103-1_19-34cm` (core, then depth interval).
+- `reference`: genome accession, e.g. `GCF_000759875.1`. `name` is the same with an `S__` prefix.
+- `domain`, `phylum`, `class_`, `order_`, `family`, `genus`, `species`: lineage with rank prefixes (`d__`, `p__`, `c__`, `o__`, `f__`, `g__`, `s__`).
+- `rank`: taxonomic rank of the row (all rows are `subspecies`, i.e. one reference genome).
+- `n_reads`, `n_alns`: reads and alignments assigned to the genome.
+- `damage`: metaDMG amplitude A, bias-corrected in the analysis pipeline (`A_b`); 0 when `fit` is `bad`. Range 0–1.
+- `significance`: metaDMG Z value of the fit.
+- `fit`: `good` or `bad`.
+- `A_b`, `q_b`, `c_b`, `phi_b`: parameters of the fit f(x) = A(1 − q)^(x − 1) + c with beta-binomial concentration phi. `map_*` columns repeat these values.
+- `breadth`, `exp_breadth`, `breadth_exp_ratio`, `coverage_mean`, `cov_evenness`, `norm_entropy`, `norm_gini`, `read_ani_mean`, `read_length_mean`: filterBAM coverage statistics.
+
+## Columns of freq.parquet
+
+For each position i = 1…25 from the read end:
+
+- `fp{i}`: observed C→T frequency, i from the 5′ end. `dp{i}`: metaDMG fit.
+- `fm{i}`: observed G→A frequency, i from the 3′ end. `dm{i}`: metaDMG fit.
+- `fwK{i}`, `fwN{i}`: C→T count and number of reference C at that position (5′). `bwK{i}`, `bwN{i}`: G→A count and number of reference G (3′).
+
+## Damage status
+
+A row is "damaged" when `fit <> 'bad' AND damage > damage_threshold`, with `damage_threshold` from config.json. Otherwise it is "non-damaged".
+
+## Explorer URL parameters
+
+Base: `https://sapropels.paleogenomics.eu/explorer/`. All parameters are optional.
+
+- `sample`: sample name
+- `taxon`: reference accession of the genome to open (must be present in `sample`)
+- `path`: taxonomy filter, ranks separated by `/`, e.g. `d__Bacteria/p__Cyanobacteria`
+- `status`: `damaged` or `non-damaged`
+- `q`: text filter on species, genus, family and accession
+- `min_damage` (0–1), `min_significance`, `min_reads`: numeric minimums
+- `sort`: `column:asc|desc`; columns `species`, `family`, `damage`, `significance`, `n_reads`
+- `compare`: comma-separated sample names ticked for comparison
+
+Example: `https://sapropels.paleogenomics.eu/explorer/?sample=GeoB15103-1_19-34cm&taxon=GCF_000759875.1`
+
+## Example query (DuckDB)
+
+```sql
+SELECT m.sample, m.species, m.n_reads, m.damage, m.significance, f.fp1, f.fm1
+FROM 'https://sapropels.paleogenomics.eu/meta.parquet' m
+JOIN 'https://sapropels.paleogenomics.eu/freq.parquet' f USING (id)
+WHERE m.reference = 'GCF_000759875.1'
+ORDER BY m.sample;
+```

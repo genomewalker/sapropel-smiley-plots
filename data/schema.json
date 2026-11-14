@@ -1,0 +1,693 @@
+{
+ "title": "Sapropel smiley plots: data files",
+ "note": "Column lists generated from the Parquet files with DuckDB DESCRIBE. Values such as thresholds and counts are in the files themselves.",
+ "files": {
+  "meta.parquet": {
+   "description": "One row per (sample, reference genome).",
+   "primary_key": [
+    "id"
+   ],
+   "unique": [
+    [
+     "sample",
+     "reference"
+    ]
+   ],
+   "columns": [
+    {
+     "name": "id",
+     "type": "BIGINT",
+     "description": "Row key; joins meta.parquet to freq.parquet. 64-bit integer: read it as BIGINT or string, not as a float."
+    },
+    {
+     "name": "sample",
+     "type": "VARCHAR",
+     "description": "Sample name: core and depth interval, e.g. GeoB15103-1_19-34cm. Matches samples.json."
+    },
+    {
+     "name": "rank",
+     "type": "VARCHAR",
+     "description": "Taxonomic rank of the row. All rows are subspecies (one reference genome)."
+    },
+    {
+     "name": "taxid",
+     "type": "BIGINT",
+     "description": "Taxon identifier used in the analysis."
+    },
+    {
+     "name": "name",
+     "type": "VARCHAR",
+     "description": "Reference accession with an S__ prefix."
+    },
+    {
+     "name": "reference",
+     "type": "VARCHAR",
+     "description": "Reference genome accession. Unique within a sample."
+    },
+    {
+     "name": "domain",
+     "type": "VARCHAR",
+     "description": "Lineage, d__ prefix."
+    },
+    {
+     "name": "phylum",
+     "type": "VARCHAR",
+     "description": "Lineage, p__ prefix."
+    },
+    {
+     "name": "class_",
+     "type": "VARCHAR",
+     "description": "Lineage, c__ prefix."
+    },
+    {
+     "name": "order_",
+     "type": "VARCHAR",
+     "description": "Lineage, o__ prefix."
+    },
+    {
+     "name": "family",
+     "type": "VARCHAR",
+     "description": "Lineage, f__ prefix."
+    },
+    {
+     "name": "genus",
+     "type": "VARCHAR",
+     "description": "Lineage, g__ prefix."
+    },
+    {
+     "name": "species",
+     "type": "VARCHAR",
+     "description": "Lineage, s__ prefix."
+    },
+    {
+     "name": "n_reads",
+     "type": "BIGINT",
+     "description": "Reads assigned to the genome."
+    },
+    {
+     "name": "n_alns",
+     "type": "BIGINT",
+     "description": "Alignments assigned to the genome."
+    },
+    {
+     "name": "n_refs",
+     "type": "BIGINT",
+     "description": "Number of reference genomes contributing to the row (1 at subspecies rank)."
+    },
+    {
+     "name": "damage",
+     "type": "DOUBLE",
+     "description": "Damage estimate: A_b, or 0 when fit is bad. Range 0-1. Compared with damage_threshold in config.json."
+    },
+    {
+     "name": "fit",
+     "type": "VARCHAR",
+     "description": "Fit flag from the analysis pipeline: good or bad."
+    },
+    {
+     "name": "q",
+     "type": "DOUBLE",
+     "description": "metaDMG decay before bias correction."
+    },
+    {
+     "name": "c",
+     "type": "DOUBLE",
+     "description": "metaDMG background before bias correction."
+    },
+    {
+     "name": "phi",
+     "type": "DOUBLE",
+     "description": "metaDMG concentration before bias correction."
+    },
+    {
+     "name": "significance",
+     "type": "DOUBLE",
+     "description": "metaDMG Z value of the fit (Zfit)."
+    },
+    {
+     "name": "A",
+     "type": "DOUBLE",
+     "description": "metaDMG amplitude before bias correction."
+    },
+    {
+     "name": "A_b",
+     "type": "DOUBLE",
+     "description": "Amplitude A of the fit, bias-corrected in the analysis pipeline."
+    },
+    {
+     "name": "q_b",
+     "type": "DOUBLE",
+     "description": "Decay q of the fit, bias-corrected."
+    },
+    {
+     "name": "c_b",
+     "type": "DOUBLE",
+     "description": "Background c of the fit, bias-corrected."
+    },
+    {
+     "name": "phi_b",
+     "type": "DOUBLE",
+     "description": "Beta-binomial concentration phi of the fit, bias-corrected."
+    },
+    {
+     "name": "A_CI_l",
+     "type": "DOUBLE",
+     "description": "Lower bound of the interval for A."
+    },
+    {
+     "name": "A_CI_h",
+     "type": "DOUBLE",
+     "description": "Upper bound of the interval for A."
+    },
+    {
+     "name": "q_CI_l",
+     "type": "DOUBLE",
+     "description": "Lower bound of the interval for q."
+    },
+    {
+     "name": "q_CI_h",
+     "type": "DOUBLE",
+     "description": "Upper bound of the interval for q."
+    },
+    {
+     "name": "c_CI_l",
+     "type": "DOUBLE",
+     "description": "Lower bound of the interval for c."
+    },
+    {
+     "name": "c_CI_h",
+     "type": "DOUBLE",
+     "description": "Upper bound of the interval for c."
+    },
+    {
+     "name": "map_A",
+     "type": "DOUBLE",
+     "description": "Copy of A_b."
+    },
+    {
+     "name": "map_q",
+     "type": "DOUBLE",
+     "description": "Copy of q_b."
+    },
+    {
+     "name": "map_c",
+     "type": "DOUBLE",
+     "description": "Copy of c_b."
+    },
+    {
+     "name": "map_phi",
+     "type": "DOUBLE",
+     "description": "Copy of phi_b."
+    },
+    {
+     "name": "map_damage",
+     "type": "DOUBLE",
+     "description": "Copy of damage."
+    },
+    {
+     "name": "map_significance",
+     "type": "DOUBLE",
+     "description": "Copy of significance."
+    },
+    {
+     "name": "mean_rlen",
+     "type": "DOUBLE",
+     "description": "Mean read length reported by metaDMG."
+    },
+    {
+     "name": "mean_gc",
+     "type": "DOUBLE",
+     "description": "Mean GC content reported by metaDMG."
+    },
+    {
+     "name": "tax_abund_read",
+     "type": "BIGINT",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "tax_abund_aln",
+     "type": "BIGINT",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "tax_abund_tad",
+     "type": "BIGINT",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "n_reads_tad",
+     "type": "BIGINT",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "bases_covered",
+     "type": "BIGINT",
+     "description": "Reference positions covered by at least one read."
+    },
+    {
+     "name": "max_covered_bases",
+     "type": "BIGINT",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "reference_length",
+     "type": "BIGINT",
+     "description": "Length of the reference genome in bases."
+    },
+    {
+     "name": "breadth",
+     "type": "DOUBLE",
+     "description": "Fraction of the reference covered by at least one read."
+    },
+    {
+     "name": "breadth_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "breadth_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "exp_breadth",
+     "type": "DOUBLE",
+     "description": "Breadth expected for randomly placed reads: 1 - exp(-coverage_mean)."
+    },
+    {
+     "name": "exp_breadth_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "exp_breadth_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "breadth_exp_ratio",
+     "type": "DOUBLE",
+     "description": "breadth / exp_breadth."
+    },
+    {
+     "name": "breadth_exp_ratio_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "breadth_exp_ratio_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "coverage_mean",
+     "type": "DOUBLE",
+     "description": "Mean depth over all reference positions."
+    },
+    {
+     "name": "coverage_mean_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "coverage_mean_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "coverage_mean_trunc",
+     "type": "DOUBLE",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "coverage_mean_trunc_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "coverage_mean_trunc_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "coverage_covered_mean",
+     "type": "DOUBLE",
+     "description": "Mean depth over covered positions."
+    },
+    {
+     "name": "coverage_covered_mean_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "coverage_covered_mean_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "cov_evenness",
+     "type": "DOUBLE",
+     "description": "Coverage evenness (filterBAM). Higher is more even."
+    },
+    {
+     "name": "cov_evenness_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "cov_evenness_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "norm_entropy",
+     "type": "DOUBLE",
+     "description": "Normalised entropy of the read distribution, 0-1. Higher is more even."
+    },
+    {
+     "name": "norm_entropy_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "norm_entropy_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "norm_gini",
+     "type": "DOUBLE",
+     "description": "Normalised Gini coefficient of coverage, 0-1. Higher is more uneven."
+    },
+    {
+     "name": "norm_gini_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "norm_gini_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_ani_mean",
+     "type": "DOUBLE",
+     "description": "Mean read identity to the reference, per cent."
+    },
+    {
+     "name": "read_ani_mean_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_ani_mean_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_ani_std",
+     "type": "DOUBLE",
+     "description": "Standard deviation of read identity."
+    },
+    {
+     "name": "read_ani_std_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_ani_std_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_length_mean",
+     "type": "DOUBLE",
+     "description": "Mean mapped read length, bases."
+    },
+    {
+     "name": "read_length_mean_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_length_mean_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_length_std",
+     "type": "DOUBLE",
+     "description": "Standard deviation of read length."
+    },
+    {
+     "name": "read_length_std_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_length_std_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_aligned_length",
+     "type": "DOUBLE",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "read_aligned_length_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_aligned_length_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_aln_score",
+     "type": "DOUBLE",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "read_aln_score_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "read_aln_score_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "mapping_quality",
+     "type": "DOUBLE",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "mapping_quality_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "mapping_quality_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "edit_distances",
+     "type": "DOUBLE",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "edit_distances_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "edit_distances_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "gc_content",
+     "type": "DOUBLE",
+     "description": "GC content (filterBAM)."
+    },
+    {
+     "name": "gc_content_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "gc_content_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "c_v",
+     "type": "DOUBLE",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "c_v_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "c_v_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "d_i",
+     "type": "DOUBLE",
+     "description": "filterBAM or metaDMG output column; see the tool documentation."
+    },
+    {
+     "name": "d_i_q25",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    },
+    {
+     "name": "d_i_q75",
+     "type": "INTEGER",
+     "description": "Quartile across contributing references; only defined above subspecies rank, so null here."
+    }
+   ]
+  },
+  "freq.parquet": {
+   "description": "Per-position substitution data, one row per row of meta.parquet.",
+   "primary_key": [
+    "id"
+   ],
+   "foreign_key": {
+    "id": "meta.parquet.id"
+   },
+   "positions": 25,
+   "columns": [
+    {
+     "name": "id",
+     "type": "BIGINT",
+     "description": "Row key; joins meta.parquet to freq.parquet. 64-bit integer: read it as BIGINT or string, not as a float."
+    }
+   ],
+   "column_patterns": [
+    {
+     "pattern": "fp{i}",
+     "i": "1..25",
+     "type": "DOUBLE",
+     "description": "Observed C>T frequency at position {i} from the 5′ end."
+    },
+    {
+     "pattern": "fm{i}",
+     "i": "1..25",
+     "type": "DOUBLE",
+     "description": "Observed G>A frequency at position {i} from the 3′ end."
+    },
+    {
+     "pattern": "dp{i}",
+     "i": "1..25",
+     "type": "DOUBLE",
+     "description": "metaDMG fit of the C>T frequency at position {i} from the 5′ end."
+    },
+    {
+     "pattern": "dm{i}",
+     "i": "1..25",
+     "type": "DOUBLE",
+     "description": "metaDMG fit of the G>A frequency at position {i} from the 3′ end."
+    },
+    {
+     "pattern": "fwK{i}",
+     "i": "1..25",
+     "type": "BIGINT",
+     "description": "C>T count at position {i} from the 5′ end."
+    },
+    {
+     "pattern": "fwN{i}",
+     "i": "1..25",
+     "type": "BIGINT",
+     "description": "Number of reference C at position {i} from the 5′ end."
+    },
+    {
+     "pattern": "bwK{i}",
+     "i": "1..25",
+     "type": "BIGINT",
+     "description": "G>A count at position {i} from the 3′ end."
+    },
+    {
+     "pattern": "bwN{i}",
+     "i": "1..25",
+     "type": "BIGINT",
+     "description": "Number of reference G at position {i} from the 3′ end."
+    }
+   ]
+  },
+  "samples.json": {
+   "description": "Array of samples.",
+   "fields": [
+    {
+     "name": "sample",
+     "type": "string",
+     "description": "Sample name; matches meta.parquet.sample."
+    },
+    {
+     "name": "specific_feature",
+     "type": "string",
+     "description": "Layer: Sapropel1, Sapropel3, Sapropel5, Sapropel6 (sapropels S1, S3, S5, S6) or a non-sapropel label."
+    },
+    {
+     "name": "age_ka",
+     "type": "number",
+     "description": "Estimated age in thousands of years before present."
+    },
+    {
+     "name": "core",
+     "type": "string",
+     "description": "Core identifier."
+    },
+    {
+     "name": "sort_order",
+     "type": "integer",
+     "description": "Display order used by the build."
+    }
+   ]
+  },
+  "config.json": {
+   "description": "Build settings.",
+   "fields": [
+    {
+     "name": "damage_threshold",
+     "type": "number",
+     "description": "A row is damaged when fit is not bad and damage is greater than this value."
+    },
+    {
+     "name": "threshold_ref_sample",
+     "type": "string",
+     "description": "Internal label of the sample whose damage distribution defines the threshold (third quartile of A_b among good fits)."
+    },
+    {
+     "name": "build_id",
+     "type": "string",
+     "description": "Unix time of the data build; also used to bust caches."
+    },
+    {
+     "name": "qc",
+     "type": "object",
+     "description": "Coverage filters applied in the build: norm_entropy_gt, breadth_gt, breadth_exp_ratio_ge."
+    },
+    {
+     "name": "min_reads",
+     "type": "integer",
+     "description": "Minimum read count passed to the build script."
+    },
+    {
+     "name": "ranks",
+     "type": "array",
+     "description": "Ranks the build script can emit. The published files contain subspecies rows only."
+    }
+   ]
+  }
+ },
+ "damage_status_rule": "fit <> 'bad' AND damage > config.damage_threshold"
+}
