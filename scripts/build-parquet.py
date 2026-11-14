@@ -428,11 +428,14 @@ def main():
     freq = freq.loc[order].reset_index(drop=True)
 
     # Damage cutoff = 3rd quartile of A_b for fit=="good" subspecies in the
-    # reference sample (scripts/05--taxonomic-profiling.R, line 78–80).
-    ref_pool = meta[
-        (meta["sample"] == THRESHOLD_REF_SAMPLE)
-        & (meta["rank"] == "subspecies")
-        & (meta["fit"] == "good")
+    # reference sample (scripts/05--taxonomic-profiling.R, lines 78–80).
+    # Taken from the full damage-lite table, before the read-count and
+    # coverage filters, as the pipeline does; computing it on the filtered
+    # rows gives a slightly lower value than Supplementary Table 4 uses.
+    ref_pool = lite[
+        (normalise_label(lite["label"]) == THRESHOLD_REF_SAMPLE)
+        & (lite["rank"] == "subspecies")
+        & (lite["fit"] == "good")
     ]["A_b"].dropna()
     if len(ref_pool) == 0:
         print(f"[warn] no fit==good subspecies rows for {THRESHOLD_REF_SAMPLE}; "
