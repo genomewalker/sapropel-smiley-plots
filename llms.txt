@@ -1,4 +1,4 @@
-# Sapropel smiley plots
+# Mediterranean sapropel microbial communities
 
 > Ancient-DNA damage estimates (metaDMG) and coverage statistics (filterBAM) for bacterial, archaeal and viral reference genomes in sediment samples from eastern Mediterranean cores GeoB15103-1, -2 and -3: sapropels S1, S3, S5 and S6 and non-sapropel intervals, 0.7–173 ka. Reads were mapped competitively against the reference genomes. Static site; all data files are public and can be read without the web interface.
 

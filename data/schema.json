@@ -1,5 +1,5 @@
 {
- "title": "Sapropel smiley plots: data files",
+ "title": "Mediterranean sapropel microbial communities: data files",
  "note": "Column lists generated from the Parquet files with DuckDB DESCRIBE. Values such as thresholds and counts are in the files themselves.",
  "files": {
   "meta.parquet": {

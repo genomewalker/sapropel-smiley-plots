@@ -1,4 +1,4 @@
-# Sapropel smiley plots
+# Mediterranean sapropel microbial communities
 
 Static site for browsing ancient-DNA damage estimates in metagenomes from
 eastern Mediterranean sediment cores GeoB15103-1, -2 and -3 (sapropels S1, S3,
