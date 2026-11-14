@@ -6,8 +6,8 @@
 //   lines       metaDMG fit
 //
 // One renderer serves every place a plot appears. Colours are read from the
-// CSS tokens at draw time and every canvas is redrawn when the theme or the
-// window size changes.
+// CSS tokens at draw time and every canvas is redrawn when the window size
+// changes.
 import { n, pct, cssVar, taxonLabel, escapeHtml } from './utils.js';
 
 const POSITIONS = 25;
@@ -21,7 +21,7 @@ const VARIANTS = {
     card:    { height: 104, pad: { top: 8, right: 8, bottom: 18, left: 8 }, yTicks: 2, marker: 1.6, line: 1.5, axes: 'ends' },
 };
 
-/** canvas -> { data, variant }, so plots can be redrawn on theme/resize. */
+/** canvas -> { data, variant }, so plots can be redrawn on resize. */
 const registry = new Map();
 
 export function smileySeries(data) {
@@ -245,7 +245,6 @@ function redrawAll() {
 }
 
 let resizeTimer = null;
-window.addEventListener('themechange', redrawAll);
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(redrawAll, 150);

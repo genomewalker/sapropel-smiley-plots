@@ -52,7 +52,6 @@ CNAME, .nojekyll      GitHub Pages settings
 | `compare-samples.js` | Side-by-side sample comparison |
 | `dialog.js` | Modal behaviour: focus trap, Escape, focus return |
 | `utils.js` | Formatting, config access, damage status rule, CSV export |
-| `theme.js` | Light/dark theme; a classic script loaded in `<head>` |
 | `landing.js` | Fills the front page and help page from `samples.json` and `config.json` |
 
 View modules do not import `actions.js`; they call `handlers.*` from
@@ -130,12 +129,11 @@ served with range requests, which Pages supports; `meta.parquet` and
   a deep-water teal for interaction. The sample list is drawn as a core log.
 - Type: Bricolage Grotesque for headings, IBM Plex Sans for text, IBM Plex
   Mono for identifiers and numbers.
-- All colours are tokens in `css/tokens.css`, with a dark set under
-  `:root[data-theme="dark"]`. Canvas and SVG charts read the tokens when they
-  draw and redraw on the `themechange` event.
+- All colours are tokens in `css/tokens.css`; the site has a light theme only.
+  Canvas and SVG charts read the tokens when they draw.
 - Chart colours (domains: blue, magenta, ochre; smiley series: orange-red and
   blue) were checked for separation under protan, deutan and tritan
-  simulation on both surfaces. If you change them, check again.
+  simulation on the page surfaces. If you change them, check again.
 - Status and series are never encoded by colour alone: badges carry text and
   a filled or outlined shape, sunburst leaves are solid or hatched, smiley
   markers are circles (5′) or squares (3′).

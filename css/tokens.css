@@ -2,10 +2,9 @@
  *
  * Palette reference: a split sediment core. Pale grey-green marl for surfaces,
  * olive-black sapropel for emphasis, deep-water teal for interaction.
- * Dark mode is set by [data-theme="dark"] on <html> (see js/theme.js).
  *
  * Chart colours were checked for colour-vision-deficiency separation
- * (protan, deutan, tritan) against both surfaces; see README.md.
+ * (protan, deutan, tritan) against the page surfaces; see README.md.
  */
 
 :root {
@@ -108,61 +107,6 @@
     --parchment-gradient: none;
     --patina-green: var(--accent-muted);
     --patina-light: var(--accent-muted);
-}
-
-:root[data-theme="dark"] {
-    color-scheme: dark;
-
-    --bg-deep: #0c1415;
-    --bg-base: #111b1d;
-    --bg-raised: #18262a;
-    --bg-elevated: #203236;
-    --bg-hover: #2a4045;
-
-    --border-subtle: #1f2e31;
-    --border-default: #2f4448;
-    --border-strong: #6c8387;
-
-    --text-primary: #e4ece8;
-    --text-secondary: #b3c1bd;
-    --text-tertiary: #93a4a0;
-    --text-inverse: #0c1415;
-
-    --accent-primary: #58c2b4;
-    --accent-secondary: #7dd3c7;
-    --accent-muted: #3c8f85;
-    --accent-glow: rgba(88, 194, 180, 0.14);
-    --focus-ring: #7dd3c7;
-
-    --sapropel: #5b6340;
-    --sapropel-ink: #f4f5ea;
-    --marl: #cfcab0;
-    --marl-ink: #1f2217;
-
-    --damage-5prime: #db6a3a;
-    --damage-3prime: #4f93db;
-
-    --domain-bacteria: #4a8fd4;
-    --domain-archaea: #cf5fa3;
-    --domain-viruses: #b88a2a;
-    --domain-other: #8a9792;
-
-    --status-damaged: #58c2b4;
-    --status-non-damaged: #93a4a0;
-    --status-ancient-glow: rgba(88, 194, 180, 0.14);
-    --warn: #e0b04a;
-    --error: #f08a7c;
-
-    --plot-bg: #0c1415;
-    --plot-grid: #1f2e31;
-    --plot-axis: #93a4a0;
-
-    --scrim: rgba(3, 8, 9, 0.72);
-
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
-    --shadow-glow: 0 4px 16px rgba(88, 194, 180, 0.12);
 }
 
 /* ---------- Base ---------- */
@@ -415,11 +359,6 @@ kbd,
 .status-badge.damaged::before {
     background: currentColor;
 }
-
-/* Theme icons: show the one for the mode a click switches to. */
-.theme-toggle .icon-sun { display: none; }
-:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
-:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 
 .spinner {
     width: 18px;

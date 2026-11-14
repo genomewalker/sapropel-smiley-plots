@@ -258,8 +258,3 @@ function renderLegend() {
             <li><span class="swatch swatch-hatch" aria-hidden="true"></span>non-damaged</li>
         </ul>`;
 }
-
-// Arc colours come from CSS tokens, so rebuild when the theme changes.
-window.addEventListener('themechange', () => {
-    if (state.sampleData.length) buildSunburst();
-});
