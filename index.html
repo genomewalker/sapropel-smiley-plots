@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sapropel smiley plots</title>
+    <title>Recurring microbial roles across ancient Mediterranean deoxygenation</title>
     <meta name="description" content="Ancient-DNA damage estimates (metaDMG) for bacterial, archaeal and viral reference genomes in sediment samples from eastern Mediterranean cores GeoB15103-1, -2 and -3: sapropels S1, S3, S5 and S6 and non-sapropel intervals, 0.7–173 ka.">
     <link rel="canonical" href="https://sapropels.paleogenomics.eu/">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/tokens.css">
     <link rel="stylesheet" href="css/pages.css">
+    <link rel="stylesheet" href="css/landing.css">
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
@@ -31,7 +32,7 @@
     }
     </script>
 </head>
-<body class="page">
+<body class="page landing-page">
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header">
@@ -43,35 +44,40 @@
         </nav>
     </header>
 
-    <main id="main">
-        <section class="lede">
-            <h1>Sapropel smiley plots</h1>
-            <p class="lede-text">
-                Ancient-DNA damage estimates for bacterial, archaeal and viral reference genomes in
-                <span data-sample-count>sediment</span> samples from eastern Mediterranean cores GeoB15103-1, -2 and -3:
-                sapropels S1, S3, S5 and S6 and non-sapropel intervals, 0.7–173 ka. Damage was estimated with
-                metaDMG from competitively mapped metagenomic reads.
-            </p>
-            <p class="lede-actions">
-                <a class="btn btn-primary" href="explorer/">Open the explorer</a>
-                <a class="btn" href="help.html">Plots and metrics explained</a>
-            </p>
+    <main id="main" class="landing">
+        <h1>Recurring microbial roles across ancient Mediterranean deoxygenation</h1>
+        <!-- TODO(publication): author list, journal and DOI. -->
+        <p class="landing-authors">Author list and article reference to be added on publication.</p>
+
+        <section class="landing-section" aria-labelledby="summary-heading">
+            <h2 id="summary-heading">Summary</h2>
+            <p>Anthropogenic pressure is depleting the world’s oceans of oxygen, with uncertain consequences for marine ecosystems. Similar oxygen loss occurred in the geological past, driven by natural climate variability, and is recorded in marine sediments. However, fossils preserve little of the microorganisms that drive marine biogeochemical cycles, so we do not know whether the same taxa and metabolic functions return with each oxygen-depletion event. Here, we show that similar metabolic potential recurred across four Mediterranean sapropels despite substantial changes in species composition. These organic-rich sediment layers were deposited during episodes of oxygen depletion in the otherwise well-oxygenated Mediterranean Sea and span ~164 thousand years. We reconstructed their prokaryotic and viral communities using environmental DNA coupled with lipid biomarker analyses, authenticating ancient DNA by its post-mortem damage patterns. Picocyanobacteria occurred in all four events, but the leading genus tracked climate: <i>Prochlorococcus</i> was relatively more abundant in the warmer events, and <i>Synechococcus</i> in the coldest event. The symbiotic cyanobacterial diazotroph UCYN-A was a potential source of fixed nitrogen. Bacterial repertoires were especially similar among events, and the last-interglacial sapropel differed only through archaea that probably colonised the sediment after deposition. Together, these records show that similar microbial metabolic potential recurred across episodes of oxygen depletion under contrasting climates, providing a long-term benchmark against which present-day ocean deoxygenation can be compared.</p>
         </section>
 
-        <section aria-labelledby="samples-heading">
+        <section class="landing-section" aria-labelledby="tools-heading">
+            <h2 id="tools-heading">Tools</h2>
+            <div class="link-list">
+                <a class="link-item" href="explorer/">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6.4 6.4M12 12 3.5 9"/></svg>
+                    <div class="link-text"><span class="link-title">Explorer</span><span class="link-desc">Taxonomy and DNA damage for each sample and reference genome</span></div>
+                    <svg class="link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+                <a class="link-item" href="help.html">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2.5-3 4.5M12 17.5h.01"/></svg>
+                    <div class="link-text"><span class="link-title">Help</span><span class="link-desc">Smiley plots, damage fit, damage status and coverage statistics</span></div>
+                    <svg class="link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+                <a class="link-item" href="data/README.md">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
+                    <div class="link-text"><span class="link-title">Data description</span><span class="link-desc">Columns of the data files, with example queries</span></div>
+                    <svg class="link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+            </div>
+        </section>
+
+        <section class="landing-section" aria-labelledby="samples-heading">
             <h2 id="samples-heading">Samples</h2>
-            <p>Sapropels are dark, organic-rich layers in eastern Mediterranean sediments. Each sample below is one
-               depth interval of a core; select one to open it in the explorer.</p>
-
-            <figure class="core-figure">
-                <div id="core-chart" class="core-chart" role="group" aria-label="Sample ages by core; each band links to the sample in the explorer. The same information is in the table below."></div>
-                <figcaption>
-                    Sample age by core.
-                    <span class="key-band key-sapropel" aria-hidden="true"></span> sapropel layer
-                    <span class="key-band key-marl" aria-hidden="true"></span> non-sapropel sediment
-                </figcaption>
-            </figure>
-
+            <p class="landing-note">Site GeoB15103, eastern Mediterranean south of Cyprus. Select a sample to open it in the explorer.</p>
             <div class="table-wrap">
                 <table class="data" id="sample-table">
                     <caption class="visually-hidden">Samples in this data set</caption>
@@ -91,107 +97,56 @@
             </div>
         </section>
 
-        <section aria-labelledby="smiley-heading">
-            <h2 id="smiley-heading">Smiley plot</h2>
-            <div class="two-col">
-                <figure class="schematic">
-                    <svg viewBox="0 0 460 250" role="img" aria-labelledby="schematic-title schematic-desc">
-                        <title id="schematic-title">Schematic smiley plot</title>
-                        <desc id="schematic-desc">Substitution frequency against read position. On the left, C to T frequency is highest at position 1 from the 5′ end and falls to a low background within about ten positions. On the right, mirrored, G to A frequency rises towards position 1 from the 3′ end.</desc>
-                        <g class="grid">
-                            <line x1="50" y1="30" x2="440" y2="30"/><line x1="50" y1="110" x2="440" y2="110"/><line x1="50" y1="190" x2="440" y2="190"/>
-                        </g>
-                        <path class="fit five" d="M52 42 C 66 150, 96 182, 236 184"/>
-                        <path class="fit three" d="M254 184 C 394 182, 424 150, 438 42"/>
-                        <g class="obs five">
-                            <circle cx="52" cy="40" r="4"/><circle cx="64" cy="102" r="4"/><circle cx="76" cy="134" r="4"/><circle cx="88" cy="160" r="4"/>
-                            <circle cx="104" cy="168" r="4"/><circle cx="124" cy="180" r="4"/><circle cx="150" cy="178" r="4"/><circle cx="180" cy="185" r="4"/><circle cx="212" cy="182" r="4"/><circle cx="236" cy="185" r="4"/>
-                        </g>
-                        <g class="obs three">
-                            <rect x="434" y="38" width="8" height="8"/><rect x="422" y="98" width="8" height="8"/><rect x="410" y="132" width="8" height="8"/><rect x="398" y="154" width="8" height="8"/>
-                            <rect x="382" y="166" width="8" height="8"/><rect x="362" y="174" width="8" height="8"/><rect x="336" y="178" width="8" height="8"/><rect x="306" y="179" width="8" height="8"/><rect x="274" y="181" width="8" height="8"/><rect x="250" y="180" width="8" height="8"/>
-                        </g>
-                        <g class="labels">
-                            <text x="50" y="18">C→T frequency</text>
-                            <text x="440" y="18" text-anchor="end">G→A frequency</text>
-                            <text x="50" y="210">1</text><text x="236" y="210" text-anchor="end">25</text>
-                            <text x="254" y="210">25</text><text x="440" y="210" text-anchor="end">1</text>
-                            <text x="143" y="232" text-anchor="middle">position from 5′ end</text>
-                            <text x="347" y="232" text-anchor="middle">position from 3′ end</text>
-                        </g>
-                    </svg>
-                    <figcaption>Schematic, not data. Markers: observed frequency. Lines: metaDMG fit.</figcaption>
-                </figure>
-                <div>
-                    <p>After death, cytosines near the ends of DNA fragments deaminate. Sequenced reads from old DNA
-                       therefore show C→T substitutions concentrated at the 5′ end and, on the complementary strand,
-                       G→A substitutions at the 3′ end.</p>
-                    <ul>
-                        <li>The left half shows C→T frequency at positions 1–25 from the 5′ end; the right half shows
-                            G→A frequency at positions 25–1 towards the 3′ end.</li>
-                        <li>Markers are the observed frequencies; lines are the fitted damage curve.</li>
-                        <li>Frequencies that rise steeply towards both ends indicate damaged DNA. A flat profile
-                            indicates little or no damage.</li>
-                    </ul>
-                    <p><a href="help.html#smiley">Full description of plots and metrics</a></p>
+        <section class="landing-section" aria-labelledby="code-heading">
+            <h2 id="code-heading">Code</h2>
+            <div class="link-list">
+                <a class="link-item" href="https://github.com/GeoGenetics/2026-mediterranean-sapropels" rel="noopener">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
+                    <div class="link-text"><span class="link-title">Analysis code</span><span class="link-desc">GeoGenetics/2026-mediterranean-sapropels, workflows and scripts; public on publication</span></div>
+                    <svg class="link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
+                </a>
+                <a class="link-item" href="https://github.com/genomewalker/sapropel-smiley-plots" rel="noopener">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></svg>
+                    <div class="link-text"><span class="link-title">Source of this site</span><span class="link-desc">genomewalker/sapropel-smiley-plots</span></div>
+                    <svg class="link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3"/></svg>
+                </a>
+            </div>
+        </section>
+
+        <section class="landing-section" id="data" aria-labelledby="data-heading">
+            <h2 id="data-heading">Data</h2>
+            <div class="link-list">
+                <!-- TODO(data): ENA project accession and ERDA DOIs. -->
+                <div class="link-item is-pending">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 12c0 1.7-3.6 3-8 3s-8-1.3-8-3M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/></svg>
+                    <div class="link-text"><span class="link-title">Sequencing data</span><span class="link-desc">European Nucleotide Archive; accession to be added on publication</span></div>
                 </div>
+                <div class="link-item is-pending">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M20 12c0 1.7-3.6 3-8 3s-8-1.3-8-3M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/></svg>
+                    <div class="link-text"><span class="link-title">Processed data and results</span><span class="link-desc">ERDA; DOI to be added on publication</span></div>
+                </div>
+                <a class="link-item" href="meta.parquet">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+                    <div class="link-text"><span class="link-title">meta.parquet</span><span class="link-desc">One row per sample and reference genome: taxonomy, read counts, damage fit, coverage statistics</span></div>
+                    <svg class="link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+                <a class="link-item" href="freq.parquet">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+                    <div class="link-text"><span class="link-title">freq.parquet</span><span class="link-desc">Substitution frequencies at positions 1–25 from each read end, for the same rows</span></div>
+                    <svg class="link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+                <a class="link-item" href="samples.json">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+                    <div class="link-text"><span class="link-title">samples.json</span><span class="link-desc">Sample names, core, depth, sapropel layer and age</span></div>
+                    <svg class="link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
+                <a class="link-item" href="config.json">
+                    <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+                    <div class="link-text"><span class="link-title">config.json</span><span class="link-desc">Damage threshold, filter settings and build identifier</span></div>
+                    <svg class="link-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </a>
             </div>
-        </section>
-
-        <section aria-labelledby="use-heading">
-            <h2 id="use-heading">Explorer</h2>
-            <ol class="steps">
-                <li><strong>Choose a sample.</strong> The sample list is ordered by age; sapropel layers carry a dark band.</li>
-                <li><strong>Narrow the taxonomy.</strong> Select a segment of the sunburst, or an entry in the list below it,
-                    to restrict the table to that group. Segment size is proportional to read count.</li>
-                <li><strong>Open a reference genome.</strong> A table row opens its smiley plot, the metaDMG fit and the
-                    coverage statistics (breadth, expected breadth, their ratio, Gini, entropy).</li>
-                <li><strong>Compare.</strong> Follow one species or genus through every sample, or put several samples side by side.</li>
-            </ol>
-            <p>The address bar always describes the current view and can be shared, for example
-               <a href="explorer/?sample=GeoB15103-1_19-34cm&amp;taxon=GCF_000759875.1"><code>explorer/?sample=GeoB15103-1_19-34cm&amp;taxon=GCF_000759875.1</code></a>.
-               Parameters are listed in <a href="help.html#url">Help</a>.</p>
-        </section>
-
-        <section id="data" aria-labelledby="data-heading">
-            <h2 id="data-heading">Data files</h2>
-            <p>The explorer reads these files directly in the browser with DuckDB-WASM. They can be downloaded and
-               queried with any Parquet reader.</p>
-            <div class="table-wrap">
-                <table class="data">
-                    <thead><tr><th scope="col">File</th><th scope="col">Contents</th></tr></thead>
-                    <tbody>
-                        <tr><th scope="row"><a href="meta.parquet" download>meta.parquet</a></th>
-                            <td>One row per sample and reference genome: taxonomy, read counts, metaDMG damage fit, coverage statistics.</td></tr>
-                        <tr><th scope="row"><a href="freq.parquet" download>freq.parquet</a></th>
-                            <td>Per-position substitution frequencies and counts for the same rows (positions 1–25 from each read end).</td></tr>
-                        <tr><th scope="row"><a href="samples.json" download>samples.json</a></th>
-                            <td>Sample names, core, sapropel layer and age.</td></tr>
-                        <tr><th scope="row"><a href="config.json" download>config.json</a></th>
-                            <td>Damage threshold, filter settings and build identifier.</td></tr>
-                        <tr><th scope="row"><a href="data/README.md">data/README.md</a></th>
-                            <td>Column descriptions and example queries.</td></tr>
-                        <tr><th scope="row"><a href="data/schema.json">data/schema.json</a></th>
-                            <td>Column names and types, machine-readable.</td></tr>
-                        <tr><th scope="row"><a href="llms.txt">llms.txt</a></th>
-                            <td>Plain-text description of the site, files and URL parameters for scripts and AI agents.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section aria-labelledby="cite-heading">
-            <h2 id="cite-heading">Citation and sources</h2>
-            <dl class="sources">
-                <!-- TODO(publication): replace with the full reference and DOI once the article is published. -->
-                <div><dt>Article</dt><dd>Fernandez-Guerra et al., in review. Reference and DOI to be added on publication.</dd></div>
-                <div><dt>Analysis code</dt><dd><a href="https://github.com/GeoGenetics/2026-mediterranean-sapropels">github.com/GeoGenetics/2026-mediterranean-sapropels</a> (public on publication)</dd></div>
-                <!-- TODO(data): add the sequencing-data accession and any archive DOIs for this project. -->
-                <div><dt>Sequencing data</dt><dd>Accession to be added on publication.</dd></div>
-                <div><dt>Methods</dt><dd><a href="https://github.com/metaDMG-dev/metaDMG-core">metaDMG</a> (damage estimation),
-                    <a href="https://github.com/genomewalker/bam-filter">filterBAM</a> (coverage statistics)</dd></div>
-                <div><dt>Related site</dt><dd><a href="https://kapk.paleogenomics.eu">kapk.paleogenomics.eu</a>, the same explorer for the Kap København Formation</dd></div>
-            </dl>
+            <p class="landing-note">The explorer reads these files in the browser with DuckDB-WASM; any Parquet reader can open them. <a href="llms.txt">llms.txt</a> describes the site and files in plain text.</p>
         </section>
     </main>
 

@@ -7,7 +7,7 @@ metaDMG from competitively mapped reads; coverage statistics come from
 filterBAM.
 
 Site: https://sapropels.paleogenomics.eu
-Article: Fernandez-Guerra et al., in review.
+Article: reference and DOI to be added on publication.
 
 There is no build step. The pages are plain HTML, CSS and ES modules, and the
 browser reads the Parquet files with DuckDB-WASM.
@@ -15,12 +15,13 @@ browser reads the Parquet files with DuckDB-WASM.
 ## Layout
 
 ```
-index.html            front page: samples, how to read a smiley plot, data files
+index.html            front page: article title and summary, tools, samples, code and data links
 help.html             plots, metrics, damage status rule, URL parameters
 explorer/index.html   the explorer
 css/tokens.css        colour, type and spacing tokens (light and dark), shared base styles
 css/explorer.css      explorer layout and components
 css/pages.css         front page and help page
+css/landing.css       front page layout
 js/                   ES modules, see below
 meta.parquet          one row per (sample, reference genome)
 freq.parquet          per-position substitution frequencies

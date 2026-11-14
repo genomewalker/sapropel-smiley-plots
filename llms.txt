@@ -3,11 +3,11 @@
 > Ancient-DNA damage estimates (metaDMG) and coverage statistics (filterBAM) for bacterial, archaeal and viral reference genomes in sediment samples from eastern Mediterranean cores GeoB15103-1, -2 and -3: sapropels S1, S3, S5 and S6 and non-sapropel intervals, 0.7–173 ka. Reads were mapped competitively against the reference genomes. Static site; all data files are public and can be read without the web interface.
 
 Site: https://sapropels.paleogenomics.eu/
-Article: Fernandez-Guerra et al., in review (reference and DOI not yet available).
+Article: "Recurring microbial roles across ancient Mediterranean deoxygenation"; reference and DOI to be added on publication.
 
 ## Pages
 
-- [Front page](https://sapropels.paleogenomics.eu/): sample table, how to read a smiley plot, data files
+- [Front page](https://sapropels.paleogenomics.eu/): article title and summary, sample table, code and data links
 - [Explorer](https://sapropels.paleogenomics.eu/explorer/): interactive view; needs JavaScript and WebAssembly (DuckDB-WASM)
 - [Help](https://sapropels.paleogenomics.eu/help.html): plots, metrics, damage status rule, URL parameters
 

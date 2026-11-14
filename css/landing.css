@@ -1,0 +1,160 @@
+/* Front page: one narrow column with the article title, summary and link
+ * lists (tools, samples, code, data). Shared header, footer and table styles
+ * come from pages.css. */
+
+.landing-page .site-header,
+.landing-page .site-footer {
+    max-width: 760px;
+}
+
+.landing-page .site-header {
+    border-bottom: 1px solid var(--border-default);
+}
+
+main.landing {
+    max-width: 760px;
+    padding-top: var(--space-2xl);
+}
+
+.landing h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.1rem);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+    margin: 0 0 var(--space-md);
+}
+
+.landing-authors {
+    margin: 0 0 var(--space-xl);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--border-default);
+    color: var(--text-tertiary);
+    font-size: var(--text-sm);
+}
+
+main.landing > section.landing-section {
+    border-top: 0;
+    padding: var(--space-lg) 0 var(--space-xl);
+}
+
+.landing-section h2 {
+    margin: 0 0 var(--space-md);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+
+.landing-section > p {
+    margin: 0;
+    max-width: none;
+    line-height: 1.65;
+    color: var(--text-secondary);
+}
+
+.landing-section > p.landing-note {
+    margin-top: var(--space-md);
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+}
+
+.landing-section .table-wrap {
+    margin-top: var(--space-md);
+}
+
+/* ---------- Link lists ---------- */
+
+.link-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.link-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    padding: 14px var(--space-lg);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+a.link-item:hover {
+    border-color: var(--accent-primary);
+    background: var(--bg-raised);
+}
+
+a.link-item:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+}
+
+.link-item.is-pending {
+    background: transparent;
+    border-style: dashed;
+    color: var(--text-secondary);
+}
+
+.link-icon,
+.link-arrow {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.link-icon {
+    color: var(--accent-primary);
+}
+
+.is-pending .link-icon {
+    color: var(--text-tertiary);
+}
+
+.link-arrow {
+    margin-left: auto;
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+}
+
+.link-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.link-title {
+    font-weight: 600;
+    font-size: var(--text-base);
+}
+
+.link-desc {
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+    main.landing {
+        padding-top: var(--space-xl);
+    }
+
+    .link-item {
+        gap: var(--space-md);
+        padding: var(--space-md);
+    }
+}
